@@ -7,33 +7,47 @@ void output_comment(int fd_read)
 	(void)fd_read;
 }
 
+void write_one_segment(char *to_convert, void *output)
+{
+	char	base_output[36] = "0123456789abcdefghijklmnopqrstuvwxyz";
+	char	*output_char;
+	int		i;
+	int		j;
+
+	i = 0; 
+	j = 0;
+	output_char = output;
+	while (to_convert[j] && j < 17)
+	{
+		if (j != 0 && j != 16 && j % 2 == 0)
+			i++;
+		output_char[i] = base_output[to_convert[j] % 16];
+		i++;
+		j++;
+	}
+	ft_printf("%d\n", i);
+}
+
 int	byte_code(char *to_convert, char **output)
 {
 	int		i;
 	int		j;
-	char	base_output[36] = "0123456789abcdefghijklmnopqrstuvwxyz";
+	int		strlen;
 
 	i = 0;
+	strlen = ft_strlen(to_convert);
 	i = 48 - ft_strlen(to_convert) % 48 + ft_strlen(to_convert) * 3; 
 	if (!((*output) = malloc(sizeof(char) * i)))
 		ft_myexit("malloc error in byte_code");
 	ft_memset((*output), ' ', i);
 	i = 0;
 	j = 0;
-	while (to_convert[j])
+	while (i < strlen)
 	{
-		(*output)[i] = base_output[to_convert[j] % 16];
-		if (i % 3 == 0 && i % 48)
-			i++;
-		if (i % 24 == 0 && i % 48)
-			i++;
-		else if (i % 48 == 0)
-		{
-			(*output)[i] = '\n';
-			i++;
-		}
-		j++;
-		i++;
+		write_one_segment(&to_convert[i], &(*output)[j]);
+		i += 16;
+		j += 24;
+		(*output)[j] = '\n';
 	}
 	return (i);
 }
