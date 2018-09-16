@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/16 17:39:15 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/16 23:50:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,35 @@ void	input_magic(int fd_write)
 	if (ft_check_endianness())
 		magic_nbr = little_endian_to_big(magic_nbr);
 	write(fd_write, &magic_nbr, 4);
+}
+
+void	check_instructions(int fd_read, int fd_write)
+{
+	char	*buf;
+	char	**instruction;
+	int		ret;
+	int		i;
+
+	buf = NULL;
+	while ((ret = get_next_line(fd_read, &buf, '\n') > 1)
+	{
+		instruction = NULL;
+		i = 0;
+		if (!(instruction = ft_split_char(buf, ' ')))
+			ft_myexit("error in ft_split");
+		while (ft_strcmp(instruction[0], g_instructions[i]) && i < INSTRUCT_NBR)
+			i++;
+		if (ft_strcmp(instruction[0], g_instructions[i]))
+			ft_myexit("bad instruction name");
+		if (!check_instruction_arguments(instruction, i))
+			ft_myexit(ft_strjoin("bad arguments passed to instruction : ", instruction[0]));
+		write_instruction(instruction, fd_write, i);
+		ft_memdel((void**)&buf);
+		ft_tabdel((void***)&instruction);
+	}
+	if (ret < 0)
+		ft_myexit("get_next_line error");
+			
 }
 
 int		main(int ac, char **av)
