@@ -121,31 +121,65 @@ void	input_magic(int fd_write)
 }
 
 
-void	check_instructions(int fd_write, char *line, t_instruction instruction)
-{
-	char	**line_split;
-	int		i;
-
-	i = 0;
-	line_split = NULL;
-	if (!(line_split = ft_split_char(line, ' ')))
-		ft_myexit("error in ft_split");
-	while (ft_strcmp(line_split[0], instruction.names[i]) && i < INSTRUCT_NBR)
-		i++;
-	if (ft_strcmp(line_split[0], instruction.names[i]))
-		ft_myexit("bad instruction name");
-	if (!check_instruction_arguments(line_split, i, instruction))
-		ft_myexit(ft_strjoin("bad arguments passed to instruction : ", instruction.names[i]));
-	write_instruction(instruction, fd_write, i);
-	ft_memdel((void**)&line);
-	ft_tabdel((void***)&instruction);
-}
-
 t_instruction	set_instructions_argument_types(t_instruction instructions)
 {
-	unsigned char *transversal;
+	instructions.instruct_arg[1][1] = T_DIR;
+	instructions.instruct_arg[2][1] = T_DIR;
+	instructions.instruct_arg[2][2] = T_IND | T_REG;
+	instructions.instruct_arg[3][1] = T_REG;
+	instructions.instruct_arg[3][2] = T_IND | T_REG;
+	instructions.instruct_arg[3][1] = T_REG;
+	instructions.instruct_arg[3][2] = T_REG;
+	instructions.instruct_arg[3][3] = T_REG;
+	instructions.instruct_arg[4][1] = T_REG;
+	instructions.instruct_arg[4][2] = T_REG;
+	instructions.instruct_arg[4][3] = T_REG;
+	instructions.instruct_arg[5][1] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[5][2] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[5][3] = T_REG;
+	instructions.instruct_arg[6][1] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[6][2] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[6][3] = T_REG;
+	instructions.instruct_arg[7][1] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[7][2] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[7][3] = T_REG;
+	instructions.instruct_arg[8][1] = T_DIR;
+	instructions.instruct_arg[9][1] = T_REG | T_DIR | T_DIR;
+	instructions.instruct_arg[9][2] = T_DIR | T_REG;
+	instructions.instruct_arg[9][3] = T_REG;
+	instructions.instruct_arg[10][1] = T_REG;
+	instructions.instruct_arg[10][2] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[10][3] = T_REG | T_DIR;
+	instructions.instruct_arg[11][1] = T_DIR;
+	instructions.instruct_arg[12][1] = T_DIR;
+	instructions.instruct_arg[12][2] = T_IND | T_REG;
+	instructions.instruct_arg[13][1] = T_REG | T_DIR | T_IND;
+	instructions.instruct_arg[13][2] = T_REG | T_DIR;
+	instructions.instruct_arg[13][3] = T_REG;
+	instructions.instruct_arg[14][1] = T_DIR;
+	instructions.instruct_arg[15][1] = T_REG;
+	return (instructions);
+}
 
-	transversal = (void*)instructions.instruct_arg[0];
+t_instruction	set_instructions_argument_nbr(t_instruction instructions)
+{
+	instructions.instruct_arg[0][0] = 1;
+	instructions.instruct_arg[1][0] = 2;
+	instructions.instruct_arg[2][0] = 2;
+	instructions.instruct_arg[3][0] = 3;
+	instructions.instruct_arg[4][0] = 3;
+	instructions.instruct_arg[5][0] = 3;
+	instructions.instruct_arg[6][0] = 3;
+	instructions.instruct_arg[7][0] = 3;
+	instructions.instruct_arg[8][0] = 1;
+	instructions.instruct_arg[9][0] = 3;
+	instructions.instruct_arg[10][0] = 3;
+	instructions.instruct_arg[11][0] = 1;
+	instructions.instruct_arg[12][0] = 2;
+	instructions.instruct_arg[13][0] = 3;
+	instructions.instruct_arg[14][0] = 1;
+	instructions.instruct_arg[15][0] = 1;
+	return (set_instructions_argument_types(instructions));
 }
 
 t_instruction	set_instructions(void)
@@ -168,7 +202,52 @@ t_instruction	set_instructions(void)
 	ft_memcpy(instructions.names[13], "lldi", ft_strlen("lldi"));
 	ft_memcpy(instructions.names[14], "lfork", ft_strlen("lfork"));
 	ft_memcpy(instructions.names[15], "aff", ft_strlen("aff"));
-	return (instructions);
+	return (set_instructions_argument_nbr(instructions));
+}
+
+void	check_1_command(char *command, char match)
+{
+	if (match & T_DIR)
+}
+
+void	check_instruction_arguments(char *commands, int i, t_instruction instructions)
+{
+	char	**all_commands;
+	char	command_size;
+	char	j;
+
+	j = 0;
+	command_size = 0;
+	if (!(all_commands = ft_split_char(commands, ',')))
+		ft_myexit("ft_split failed. Use commas to distinguish instructions");
+	while (all_commands[(int)command_size])
+		command_size++;
+	if (command_size != instructions.instruct_arg[i][0])
+		ft_myexit(ft_strjoin("incorrect argument number passed to instruction : ", instructions.names[i]));
+	while (j < command_size)
+	{
+		check_1_command(all_commands[(int)j], instructions.instruct_arg[i][(int)j]);
+		j++;
+	}
+}
+
+void	check_instructions(int fd_write, char *line, t_instruction instruction)
+{
+	char	**line_split;
+	int		i;
+
+	i = 0;
+	line_split = NULL;
+	if (!(line_split = ft_split_char(line, ' ')))
+		ft_myexit("error in ft_split");
+	while (ft_strcmp(line_split[0], instruction.names[i]) && i < INSTRUCT_NBR)
+		i++;
+	if (i == INSTRUCT_NBR)
+		ft_myexit("bad instruction name");
+	check_instruction_arguments(line_split[1], i, instruction);
+	write_instruction(instruction, fd_write, i);
+	ft_memdel((void**)&line);
+	ft_tabdel((void***)&instruction);
 }
 
 void	read_instructions(int fd_read, int fd_write)
