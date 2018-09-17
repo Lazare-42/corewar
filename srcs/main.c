@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/16 23:50:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/17 13:27:08 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,33 +120,69 @@ void	input_magic(int fd_write)
 	write(fd_write, &magic_nbr, 4);
 }
 
-void	check_instructions(int fd_read, int fd_write)
+
+void	check_instructions(int fd_write, char *line, t_instruction instruction)
 {
-	char	*buf;
-	char	**instruction;
-	int		ret;
+	char	**line_split;
 	int		i;
 
+	i = 0;
+	line_split = NULL;
+	if (!(line_split = ft_split_char(line, ' ')))
+		ft_myexit("error in ft_split");
+	while (ft_strcmp(line_split[0], instruction.names[i]) && i < INSTRUCT_NBR)
+		i++;
+	if (ft_strcmp(line_split[0], instruction.names[i]))
+		ft_myexit("bad instruction name");
+	if (!check_instruction_arguments(line_split, i, instruction))
+		ft_myexit(ft_strjoin("bad arguments passed to instruction : ", instruction.names[i]));
+	write_instruction(instruction, fd_write, i);
+	ft_memdel((void**)&line);
+	ft_tabdel((void***)&instruction);
+}
+
+t_instruction	set_instructions_argument_types(t_instruction instructions)
+{
+	unsigned char *transversal;
+
+	transversal = (void*)instructions.instruct_arg[0];
+}
+
+t_instruction	set_instructions(void)
+{
+	t_instruction instructions;
+
+	ft_memcpy(instructions.names[0], "live", ft_strlen("live"));
+	ft_memcpy(instructions.names[1], "ld", ft_strlen("ld"));
+	ft_memcpy(instructions.names[2], "st", ft_strlen("st"));
+	ft_memcpy(instructions.names[3], "add", ft_strlen("add"));
+	ft_memcpy(instructions.names[4], "sub", ft_strlen("sub"));
+	ft_memcpy(instructions.names[5], "and", ft_strlen("and"));
+	ft_memcpy(instructions.names[6], "or", ft_strlen("or"));
+	ft_memcpy(instructions.names[7], "xor", ft_strlen("xor"));
+	ft_memcpy(instructions.names[8], "zjmp", ft_strlen("zjmp"));
+	ft_memcpy(instructions.names[9], "ldi", ft_strlen("ldi"));
+	ft_memcpy(instructions.names[10], "sti", ft_strlen("sti"));
+	ft_memcpy(instructions.names[11], "fork", ft_strlen("fork"));
+	ft_memcpy(instructions.names[12], "lld", ft_strlen("lld"));
+	ft_memcpy(instructions.names[13], "lldi", ft_strlen("lldi"));
+	ft_memcpy(instructions.names[14], "lfork", ft_strlen("lfork"));
+	ft_memcpy(instructions.names[15], "aff", ft_strlen("aff"));
+	return (instructions);
+}
+
+void	read_instructions(int fd_read, int fd_write)
+{
+	int				ret;
+	char			*buf;
+	t_instruction	instructions;
+
 	buf = NULL;
-	while ((ret = get_next_line(fd_read, &buf, '\n') > 1)
-	{
-		instruction = NULL;
-		i = 0;
-		if (!(instruction = ft_split_char(buf, ' ')))
-			ft_myexit("error in ft_split");
-		while (ft_strcmp(instruction[0], g_instructions[i]) && i < INSTRUCT_NBR)
-			i++;
-		if (ft_strcmp(instruction[0], g_instructions[i]))
-			ft_myexit("bad instruction name");
-		if (!check_instruction_arguments(instruction, i))
-			ft_myexit(ft_strjoin("bad arguments passed to instruction : ", instruction[0]));
-		write_instruction(instruction, fd_write, i);
-		ft_memdel((void**)&buf);
-		ft_tabdel((void***)&instruction);
-	}
+	instructions = set_instructions();
+	while ((ret = get_next_line(fd_read, &buf, '\n') > 1))
+		check_instructions(fd_write, buf, instructions);
 	if (ret < 0)
 		ft_myexit("get_next_line error");
-			
 }
 
 int		main(int ac, char **av)
