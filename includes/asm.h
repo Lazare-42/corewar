@@ -25,19 +25,22 @@
 #define NAME_CMD_STRING			".name"
 #define COMMENT_CMD_STRING		".comment"
 #define INSTRUCT_NBR			16
+#define T_DIR					4
+#define T_IND 					2
+#define T_REG 					1
 
-typedef struct		header_s
+typedef struct		s_header
 {
   unsigned int		magic;
   char				prog_name[PROG_NAME_LENGTH + 1];
   unsigned int		prog_size;
   char				comment[COMMENT_LENGTH + 1];
-}					header_t;
+}					t_header;
 
-typedef struct		instructions_s
+typedef struct		s_instructions
 {
-	char			instructions[INSTRUCT_NBR][64];
-	int				instruct_arg[INSTRUCT_NBR][1];
-}					instruction_t;
+	char			names[INSTRUCT_NBR][64];
+	unsigned char	instruct_arg[INSTRUCT_NBR][4];
+}					t_instruction;
 
 #endif
