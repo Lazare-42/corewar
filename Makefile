@@ -1,6 +1,7 @@
 NAME = asm
 
 SOURCES =	main.c \
+			instruction_parameter.c \
 
 LIBDIR = libft
 

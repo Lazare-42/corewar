@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/16 22:30:54 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/18 09:07:12 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,12 @@
 #define T_IND 					2
 #define T_REG 					1
 
+#define COMMENT_CHAR			'#'
+#define LABEL_CHAR				':'
+#define DIRECT_CHAR				'%'
+#define SEPARATOR_CHAR			','
+#define REG_NUMBER				16
+
 typedef struct		s_header
 {
   unsigned int		magic;
@@ -42,5 +48,7 @@ typedef struct		s_instructions
 	char			names[INSTRUCT_NBR][64];
 	unsigned char	instruct_arg[INSTRUCT_NBR][4];
 }					t_instruction;
+
+t_instruction	set_instructions(void);
 
 #endif
