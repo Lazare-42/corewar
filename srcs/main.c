@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/19 16:36:52 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 18:10:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,12 @@ void	output_name_comment(int fd_read, int fd_write, int which)
 	i = 7;
 	if (get_next_line(fd_read, &buf, '\n') <= 0)
 		ft_myexit("You passed an empty or incomplete file");
+	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH) || (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
+	{
+		ft_memdel((void**)&buf);
+		if (get_next_line(fd_read, &buf, '\n') <= 0)
+			ft_myexit("You passed an empty or incomplete file");
+	}
 	if (!(split = (ft_split_char(buf, '\"'))) || !split[1])
 		ft_myexit("malloc error or invalid split");
 	if ((ft_strlen(split[1]) > PROG_NAME_LENGTH && which == PROG_NAME_LENGTH) || (ft_strlen(split[1]) > COMMENT_LENGTH && which == COMMENT_LENGTH))
@@ -303,6 +309,8 @@ void	check_instructions(char *line, t_instruction instruction)
 	if (check_if_label(line))
 		start = 1;
 	line_split = split_instructions(line, instruction, start);
+	if (start && !line_split[1])
+		return ;
 	while (ft_strcmp(line_split[start], instruction.names[i]) && i < INSTRUCT_NBR)
 		i++;
 	if (i == INSTRUCT_NBR)
