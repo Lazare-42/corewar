@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/18 11:53:30 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 12:32:17 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,39 @@ void	input_magic(int fd_write)
 	write(fd_write, &magic_nbr, 4);
 }
 
+t_label		*new_label(char *name, int is_anchor)
+{
+	t_label *new;
+
+	if (!(new = malloc(sizeof(t_label))))
+		ft_myexit("malloc error");
+	new->name = NULL;
+	if (!(new->name = ft_strdup(name)))
+		ft_myexit("malloc error");
+	new->next = NULL;
+	new->position = 0;
+	new->anchor = (is_anchor) ? 1 : 0;
+	return (new);
+}
+
+t_label		*label_list(char	*label, int is_anchor)
+{
+	static t_label	*label_list = NULL;
+	t_label			*new;
+	t_label			*tmp;
+
+	tmp = label_list;
+	ft_printf("[[blue]]this is label %s\n[[end]]", label);
+	if (label)
+		new = new_label(label, is_anchor);
+	if (!label_list)
+		return (label_list = new);
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = new;
+	return (label_list);
+}
+
 void	check_1_command(char *command, char match)
 {
 	// you should return a function to check DIRECT_CHAR / LABEL_CHAR / etc
@@ -135,27 +168,32 @@ void	check_1_command(char *command, char match)
 	{
 		if (command[0] == DIRECT_CHAR)
 		{
-			if (ft_atoi(&command[1]))
-				return ; 
-			else if (is_label(&command[1]))
+			if (command[1] == LABEL_CHAR)
+			{
+				(label_list(&command[2], 0));
 				return ;
+			}
+			if (ft_isdigit(command[1])) //ft_atoi(command[1]);
+				return ; 
 		}
-			return ;
 	}
 	if (match & T_IND)
 	{
 		if (command[0] == LABEL_CHAR)
+		{
+			ft_printf("[[yellow]]Indirection %s\n[[end]]", command);
 			return ;
+		}
 		// ok here you need to find the label's adress
-		if (ft_atoi(command))
-			return ;
+	//	if (ft_atoi(command))
+	//		return ;
 		// ok here you need to check if the adresse indirectly pointed to is ...a label ?
 	}
 	if (match & T_REG)
 	{
+		ft_printf("[[cyan]]register %s\n[[end]]", command);
 		if (command[0] == 'r')
-			if (ft_atoi(&command[1]) <= REG_NUMBER)
-				return ;
+			if (ft_atoi(&command[1]) <= REG_NUMBER) return ;
 	}
 	ft_myexit(ft_strjoin(command, " (command) invoked with the wrong argument")); 
 }
@@ -174,7 +212,11 @@ void	check_instruction_arguments(char *commands, int i, t_instruction instructio
 	while (all_commands[(int)command_size])
 		command_size++;
 	if (command_size != instructions.instruct_arg[i][0])
+	{
+		ft_printf("[[red]][[bold]][[swapp]]ERROR\n[[end]]");
+		ft_printf("Expected %d arguments ; got % d\n", instructions.instruct_arg[i][0], command_size);
 		ft_myexit(ft_strjoin("incorrect argument number passed to instruction : ", instructions.names[i]));
+	}
 	while (j < command_size)
 	{
 		ft_printf("for command number %d and name : %s and argument number : %d\n", (int)i, instructions.names[i], j);
@@ -183,20 +225,93 @@ void	check_instruction_arguments(char *commands, int i, t_instruction instructio
 	}
 }
 
+char	*delete_redudant_char(char *line, int i)
+{
+	int j;
+
+	i++;
+	while (line[i])
+	{
+		j = i - 1;
+		line[j] = line[i];
+		i++;
+	}
+	line[j + 1] = 0;
+	return (line);
+}
+
+char	**split_instructions(char *line, t_instruction instruction)
+{
+	char	**line_split;
+	int		instruction_passed;
+	int		i;
+	int		j;
+
+	i = 0;
+	line_split = NULL;
+	instruction_passed = 0;
+	while (line[i])
+	{
+		j = -1;
+		while (instruction_passed && i > 0 && line[i + 1] && line[i] == ' ') 
+			line = delete_redudant_char(line, i);
+		while (!instruction_passed && j < INSTRUCT_NBR)
+		{
+			if (!(ft_memcmp(&line[i], instruction.names[j], ft_strlen(instruction.names[j]))))
+			{
+				if (line[i + ft_strlen(instruction.names[j]) + 1])
+					i += ft_strlen(instruction.names[j]) + 1;
+				else
+					ft_myexit("incomplete instruction");
+				instruction_passed = 1;
+			}
+			j++;
+		}
+		i++;
+	}
+	if (!(line_split = ft_split_whitespaces(line)))
+		ft_myexit("error in ft_split");
+	return (line_split);
+}
+
+int		cut_comment(char **line)
+{
+	int i;
+	int	fill_line;
+
+	i = 0;
+	fill_line = 0;
+	while ((*line)[i])
+	{
+		if ((*line)[i] == '#')
+		{
+			(*line)[i] = 0;
+			break ;
+		}
+		else if ((*line)[i] > 33)
+			fill_line = 1;
+		i++;
+	}
+	return (fill_line);
+}
+
 void	check_instructions(int fd_write, char *line, t_instruction instruction)
 {
 	char	**line_split;
 	int		i;
 
 	i = 0;
-	line_split = NULL;
-	ft_printf("[[red]][[underline]]Checking : %s\n[[end]]", line);
-	if (!(line_split = ft_split_whitespaces(line)))
-		ft_myexit("error in ft_split");
+	if (!(cut_comment(&line)))
+		return ;
+	line_split = split_instructions(line, instruction);
+	ft_printf("[[blue]][[underline]]Checking : %s\n[[end]]", line);
 	while (ft_strcmp(line_split[0], instruction.names[i]) && i < INSTRUCT_NBR)
 		i++;
 	if (i == INSTRUCT_NBR)
-		ft_myexit("bad instruction name");
+	{
+		// You should here check if what you got is a label followed by instructions
+		ft_myexit(ft_strjoin("bad instruction name : ", line_split[0]));
+	}
 	check_instruction_arguments(line_split[1], i, instruction);
 	(void)fd_write;
 //	write_instruction(instruction, fd_write, i);
@@ -237,6 +352,7 @@ int		main(int ac, char **av)
 	fd_write = open(name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	if (fd_read <= 0 || fd_write <= 0)
 		ft_myexit("Open error");
+	// you should check instructions and name and comment before inputing
 	input_magic(fd_write);
 	output_name_comment(fd_read, fd_write, PROG_NAME_LENGTH);
 	read_instructions(fd_read, fd_write);

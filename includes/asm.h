@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/18 09:07:12 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 08:17:37 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,14 @@ typedef struct		s_instructions
 	char			names[INSTRUCT_NBR][64];
 	unsigned char	instruct_arg[INSTRUCT_NBR][4];
 }					t_instruction;
+
+typedef struct		s_labels
+{
+	char			*name;
+	int				anchor;
+	int				position;
+	void			*next;
+}					t_label;
 
 t_instruction	set_instructions(void);
 
