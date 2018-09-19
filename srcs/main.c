@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/19 18:10:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 18:25:18 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,15 +140,11 @@ void	check_1_command(char *command, char match)
 	if (match & T_DIR)
 	{
 		if (command[0] == DIRECT_CHAR)
-		{
 			if (command[1] == LABEL_CHAR)
-			{
 				(label_list(&command[2], 0));
-				return ;
-			}
-			if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
-				return ; 
-		}
+					return ;
+		if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
+			return ; 
 	}
 	if (match & T_IND)
 	{
@@ -158,8 +154,8 @@ void	check_1_command(char *command, char match)
 			return ;
 		}
 		// ok here you need to find the label's adress
-	//	if (ft_atoi(command))
-	//		return ;
+		if (ft_isdigit(command[0]) || (command[0] == '-' && ft_isdigit(command[1])))
+			return ;
 		// ok here you need to check if the adresse indirectly pointed to is ...a label ?
 	}
 	if (match & T_REG)
