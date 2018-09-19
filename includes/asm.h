@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/19 08:17:37 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 12:40:24 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,5 +58,6 @@ typedef struct		s_labels
 }					t_label;
 
 t_instruction	set_instructions(void);
+t_label			*label_list(char	*label, int is_anchor);
 
 #endif

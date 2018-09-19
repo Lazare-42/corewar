@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/19 12:32:17 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/19 16:36:52 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,39 +120,6 @@ void	input_magic(int fd_write)
 	write(fd_write, &magic_nbr, 4);
 }
 
-t_label		*new_label(char *name, int is_anchor)
-{
-	t_label *new;
-
-	if (!(new = malloc(sizeof(t_label))))
-		ft_myexit("malloc error");
-	new->name = NULL;
-	if (!(new->name = ft_strdup(name)))
-		ft_myexit("malloc error");
-	new->next = NULL;
-	new->position = 0;
-	new->anchor = (is_anchor) ? 1 : 0;
-	return (new);
-}
-
-t_label		*label_list(char	*label, int is_anchor)
-{
-	static t_label	*label_list = NULL;
-	t_label			*new;
-	t_label			*tmp;
-
-	tmp = label_list;
-	ft_printf("[[blue]]this is label %s\n[[end]]", label);
-	if (label)
-		new = new_label(label, is_anchor);
-	if (!label_list)
-		return (label_list = new);
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new;
-	return (label_list);
-}
-
 void	check_1_command(char *command, char match)
 {
 	// you should return a function to check DIRECT_CHAR / LABEL_CHAR / etc
@@ -173,7 +140,7 @@ void	check_1_command(char *command, char match)
 				(label_list(&command[2], 0));
 				return ;
 			}
-			if (ft_isdigit(command[1])) //ft_atoi(command[1]);
+			if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
 				return ; 
 		}
 	}
@@ -207,6 +174,7 @@ void	check_instruction_arguments(char *commands, int i, t_instruction instructio
 	j = 0;
 	command_size = 0;
 	all_commands = NULL;
+	ft_printf("[[blue]][[underline]]Checking : %s\n[[end]]", commands);
 	if (!(all_commands = ft_split_char(commands, SEPARATOR_CHAR)))
 		ft_myexit("ft_split failed. Use SEPARATOR_CHAR to distinguish instructions");
 	while (all_commands[(int)command_size])
@@ -230,6 +198,7 @@ char	*delete_redudant_char(char *line, int i)
 	int j;
 
 	i++;
+	//ft_printf("%s\n", line);
 	while (line[i])
 	{
 		j = i - 1;
@@ -240,7 +209,8 @@ char	*delete_redudant_char(char *line, int i)
 	return (line);
 }
 
-char	**split_instructions(char *line, t_instruction instruction)
+
+char	**split_instructions(char *line, t_instruction instruction, int start)
 {
 	char	**line_split;
 	int		instruction_passed;
@@ -248,6 +218,12 @@ char	**split_instructions(char *line, t_instruction instruction)
 	int		j;
 
 	i = 0;
+	if (start)
+	{
+		while (line[i] != LABEL_CHAR)
+			i++;
+		i++;
+	}
 	line_split = NULL;
 	instruction_passed = 0;
 	while (line[i])
@@ -277,10 +253,10 @@ char	**split_instructions(char *line, t_instruction instruction)
 int		cut_comment(char **line)
 {
 	int i;
-	int	fill_line;
+	int	line_to_treat;
 
 	i = 0;
-	fill_line = 0;
+	line_to_treat = 0;
 	while ((*line)[i])
 	{
 		if ((*line)[i] == '#')
@@ -289,32 +265,52 @@ int		cut_comment(char **line)
 			break ;
 		}
 		else if ((*line)[i] > 33)
-			fill_line = 1;
+			line_to_treat = 1;
 		i++;
 	}
-	return (fill_line);
+	return (line_to_treat);
 }
 
-void	check_instructions(int fd_write, char *line, t_instruction instruction)
+int		check_if_label(char *line)
+{
+	char	**tmp;
+	char	*to_check;
+	
+	if (!(tmp = ft_split_whitespaces(line)))
+		ft_myexit("error in ft_split_whitespaces");
+	to_check = tmp[0];
+	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
+	{
+		to_check[ft_strlen(to_check) - 1] = 0;
+		ft_printf("[[yellow]]got this label to store : %s\n[[end]]", to_check);
+		label_list(to_check, 1);
+		return (1);
+	}
+	ft_tabdel((void***)&tmp);
+	return (0);
+}
+
+void	check_instructions(char *line, t_instruction instruction)
 {
 	char	**line_split;
 	int		i;
+	int		start;
 
 	i = 0;
+	start = 0;
 	if (!(cut_comment(&line)))
 		return ;
-	line_split = split_instructions(line, instruction);
-	ft_printf("[[blue]][[underline]]Checking : %s\n[[end]]", line);
-	while (ft_strcmp(line_split[0], instruction.names[i]) && i < INSTRUCT_NBR)
+	if (check_if_label(line))
+		start = 1;
+	line_split = split_instructions(line, instruction, start);
+	while (ft_strcmp(line_split[start], instruction.names[i]) && i < INSTRUCT_NBR)
 		i++;
 	if (i == INSTRUCT_NBR)
 	{
 		// You should here check if what you got is a label followed by instructions
-		ft_myexit(ft_strjoin("bad instruction name : ", line_split[0]));
+		ft_myexit(ft_strjoin("bad instruction name : ", line_split[start]));
 	}
-	check_instruction_arguments(line_split[1], i, instruction);
-	(void)fd_write;
-//	write_instruction(instruction, fd_write, i);
+	check_instruction_arguments(line_split[1 + start], i, instruction);
 	ft_memdel((void**)&line);
 	ft_tabdel((void***)&line_split);
 }
@@ -326,11 +322,12 @@ void	read_instructions(int fd_read, int fd_write)
 	t_instruction	instructions;
 
 	buf = NULL;
+	(void)fd_write;
 	instructions = set_instructions();
 	while ((ret = get_next_line(fd_read, &buf, '\n') > 0))
 	{
 		if (ft_strlen(buf) > 0)
-			check_instructions(fd_write, buf, instructions);
+			check_instructions(buf, instructions);
 	}
 	if (ret < 0)
 		ft_myexit("get_next_line error");
@@ -347,8 +344,7 @@ int		main(int ac, char **av)
 		ft_myexit("You need to pass not more or less than one file to assemble");
 	strlen = ft_strlen(av[1]);
 	ft_memcpy(name, av[1], strlen);
-	ft_memcpy(&name[strlen - 1], "cor", 3);
-	fd_read = open(av[1], O_RDONLY);
+	ft_memcpy(&name[strlen - 1], "cor", 3); fd_read = open(av[1], O_RDONLY);
 	fd_write = open(name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	if (fd_read <= 0 || fd_write <= 0)
 		ft_myexit("Open error");
@@ -356,4 +352,5 @@ int		main(int ac, char **av)
 	input_magic(fd_write);
 	output_name_comment(fd_read, fd_write, PROG_NAME_LENGTH);
 	read_instructions(fd_read, fd_write);
+	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
 }
