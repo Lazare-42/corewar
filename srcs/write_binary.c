@@ -1,14 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   write_binary.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
+/*   Updated: 2018/09/20 10:49:29 by lazrossi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#In"../Libft/includes/libft.h"
 #include "../includes/asm.h"
-#include <fcntl.h>
-#include <unistd.h>
+#include "../libft/includes/libft.h"
 #include <stdlib.h>
-
-void output_comment(int fd_read)
-{
-	(void)fd_read;
-}
+#include <unistd.h>
 
 int		little_endian_to_big(int src)
 {
@@ -66,6 +71,12 @@ void	output_name_comment(int fd_read, int fd_write, int which)
 	i = 7;
 	if (get_next_line(fd_read, &buf, '\n') <= 0)
 		ft_myexit("You passed an empty or incomplete file");
+	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH) || (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
+	{
+		ft_memdel((void**)&buf);
+		if (get_next_line(fd_read, &buf, '\n') <= 0)
+			ft_myexit("You passed an empty or incomplete file");
+	}
 	if (!(split = (ft_split_char(buf, '\"'))) || !split[1])
 		ft_myexit("malloc error or invalid split");
 	if ((ft_strlen(split[1]) > PROG_NAME_LENGTH && which == PROG_NAME_LENGTH) || (ft_strlen(split[1]) > COMMENT_LENGTH && which == COMMENT_LENGTH))
@@ -107,24 +118,4 @@ void	input_magic(int fd_write)
 	if (ft_check_endianness())
 		magic_nbr = little_endian_to_big(magic_nbr);
 	write(fd_write, &magic_nbr, 4);
-}
-
-int		main(int ac, char **av)
-{
-	int		fd_read;
-	int		fd_write;
-	int		strlen;
-	char	name[256];
-
-	if (ac != 2)
-		ft_myexit("You need to pass not more or less than one file to assemble");
-	strlen = ft_strlen(av[1]);
-	ft_memcpy(name, av[1], strlen);
-	ft_memcpy(&name[strlen - 1], "cor", 3);
-	fd_read = open(av[1], O_RDONLY);
-	fd_write = open(name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
-	if (fd_read <= 0 || fd_write <= 0)
-		ft_myexit("Open error");
-	input_magic(fd_write);
-	output_name_comment(fd_read, fd_write, PROG_NAME_LENGTH);
 }
