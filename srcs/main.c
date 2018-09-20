@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 18:26:56 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 21:44:48 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	check_1_command(char *command, char match)
 	// you should return a function to check DIRECT_CHAR / LABEL_CHAR / etc
 	if (match & T_DIR)
 	{
-		if (command[0] == DIRECT_CHAR)
+	if (command[0] == DIRECT_CHAR)
 			if (command[1] == LABEL_CHAR)
 				(label_list(&command[2], 0));
 					return ;
@@ -51,6 +51,28 @@ void	check_1_command(char *command, char match)
 	ft_myexit(ft_strjoin(command, " (command) invoked with the wrong argument")); 
 }
 
+int		double_separator(char *commands)
+{
+	int	i;
+	int	ret;
+
+	ret = 0;
+	i = 0;
+	while (commands[i])
+	{
+		if (commands[i] == SEPARATOR_CHAR)
+		{
+			if (ret)
+				return (ret);
+			ret = 1;
+		}
+		else if (commands[i] > 33)
+			ret = 0;
+		i++;
+	}
+	return (ret);
+}
+
 void	check_instruction_arguments(char *commands, int i, t_instruction instructions)
 {
 	char	**all_commands;
@@ -60,8 +82,8 @@ void	check_instruction_arguments(char *commands, int i, t_instruction instructio
 	j = -1;
 	command_size = 0;
 	all_commands = NULL;
-	if (!(all_commands = ft_split_char(commands, SEPARATOR_CHAR)))
-		ft_myexit("ft_split failed. Use SEPARATOR_CHAR to distinguish instructions");
+	if (double_separator(commands) || !(all_commands = ft_split_char(commands, SEPARATOR_CHAR)))
+		ft_myexit("ft_split failed. Use only one SEPARATOR_CHAR to distinguish instructions");
 	while (all_commands[(int)command_size])
 		command_size++;
 	if (command_size != instructions.instruct_arg[i][0])
@@ -228,6 +250,8 @@ int		main(int ac, char **av)
 	int		strlen;
 	char	name[256];
 
+	t_header info;
+
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
 	strlen = ft_strlen(av[1]);
@@ -238,7 +262,7 @@ int		main(int ac, char **av)
 		ft_myexit("Open error");
 	// you should check instructions and name and comment before inputing
 //	input_magic(fd_write);
-	output_name_comment(fd_read, fd_write, PROG_NAME_LENGTH);
+	output_name_comment(fd_read, &info, PROG_NAME_LENGTH);
 	read_instructions(fd_read, fd_write);
 	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
 	sleep(45);

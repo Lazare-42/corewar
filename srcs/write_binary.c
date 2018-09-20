@@ -6,12 +6,12 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 18:45:02 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 21:31:18 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/asm.h"
 #include "../libft/includes/libft.h"
+#include "../includes/asm.h"
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -59,17 +59,17 @@ void	convert_to_bytecode(char **result, void *to_convert, int name_or_comment)
 	}
 }
 
-void	output_name_comment(int fd_read, int fd_write, int which)
+void	output_name_comment(int fd_read, t_header *info, int which)
 {
 	char	*buf;
 	char	**split;
-	char	name[which];
 
 	buf = NULL;
 	split = NULL;
 	if (get_next_line(fd_read, &buf, '\n') <= 0)
 		ft_myexit("You passed an empty or incomplete file");
-	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH) || (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
+	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH)
+		|| (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
 	{
 		ft_memdel((void**)&buf);
 		if (get_next_line(fd_read, &buf, '\n') <= 0)
@@ -77,18 +77,14 @@ void	output_name_comment(int fd_read, int fd_write, int which)
 	}
 	if (!(split = (ft_split_char(buf, '\"'))) || !split[1])
 		ft_myexit("malloc error or invalid split");
-	if ((ft_strlen(split[1]) > PROG_NAME_LENGTH && which == PROG_NAME_LENGTH) || (ft_strlen(split[1]) > COMMENT_LENGTH && which == COMMENT_LENGTH))
+	if ((int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
 	ft_memdel((void**)&buf);
-	(void)name;
-	(void)fd_write;
-//	ft_memset(name, 0, which);
-	//ft_memcpy(name, split[1], ft_strlen(split[1]));
-//	write(fd_write, name, which);
-//	write(fd_write, "\0\0\0\0\0\0\0\0", 8);
+	ft_memcpy(which == (PROG_NAME_LENGTH) ?
+	info->prog_name : info->comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
-		output_name_comment(fd_read, fd_write, COMMENT_LENGTH); 
+		output_name_comment(fd_read, info, COMMENT_LENGTH); 
 }
 
 void	printbits(int nbr)

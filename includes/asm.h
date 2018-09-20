@@ -6,42 +6,16 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 10:55:03 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 20:56:45 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef ASM_H
 # define ASM_H
 
-# define PROG_NAME_LENGTH		(128)
-# define COMMENT_LENGTH			(2048)
+#include "./op.h"
 
-#define IND_SIZE				2
-#define REG_SIZE				4
-#define DIR_SIZE				REG_SIZE
-
-# define COREWAR_EXEC_MAGIC		0xea83f3
-#define COMMENT_CHAR			'#'
-#define NAME_CMD_STRING			".name"
-#define COMMENT_CMD_STRING		".comment"
 #define INSTRUCT_NBR			16
-#define T_DIR					4
-#define T_IND 					2
-#define T_REG 					1
-
-#define COMMENT_CHAR			'#'
-#define LABEL_CHAR				':'
-#define DIRECT_CHAR				'%'
-#define SEPARATOR_CHAR			','
-#define REG_NUMBER				16
-
-typedef struct		s_header
-{
-  unsigned int		magic;
-  char				prog_name[PROG_NAME_LENGTH + 1];
-  unsigned int		prog_size;
-  char				comment[COMMENT_LENGTH + 1];
-}					t_header;
 
 typedef struct		s_instructions
 {
@@ -59,6 +33,6 @@ typedef struct		s_labels
 
 t_instruction	set_instructions(void);
 t_label			*label_list(char	*label, int is_anchor);
-void			output_name_comment(int fd_read, int fd_write, int which);
+void		output_name_comment(int fd_read, t_header *info, int which);
 
 #endif
