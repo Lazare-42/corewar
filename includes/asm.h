@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 20:56:45 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 21:47:07 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,6 @@ typedef struct		s_labels
 
 t_instruction	set_instructions(void);
 t_label			*label_list(char	*label, int is_anchor);
-void		output_name_comment(int fd_read, t_header *info, int which);
+void		store_name_comment(int fd_read, t_header *info, int which);
 
 #endif

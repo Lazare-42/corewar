@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 21:31:18 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 21:47:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ void	convert_to_bytecode(char **result, void *to_convert, int name_or_comment)
 	}
 }
 
-void	output_name_comment(int fd_read, t_header *info, int which)
+void	store_name_comment(int fd_read, t_header *info, int which)
 {
 	char	*buf;
 	char	**split;
@@ -84,7 +84,7 @@ void	output_name_comment(int fd_read, t_header *info, int which)
 	info->prog_name : info->comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
-		output_name_comment(fd_read, info, COMMENT_LENGTH); 
+		store_name_comment(fd_read, info, COMMENT_LENGTH); 
 }
 
 void	printbits(int nbr)

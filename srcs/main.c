@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 21:44:48 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 22:48:47 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,8 +108,18 @@ char	*delete_redudant_char(char *line, int i)
 	return (line);
 }
 
+char	*check_white_space_redudancy(char *line, int from)
+{
+	while (line[from])
+	{
+		while (from > 0 && line[from + 1] && line[from] == ' ') 
+			line = delete_redudant_char(line, from);
+		from++;
+	}
+	return (line);
+}
 
-char	**split_instructions(char *line, t_instruction instruction, int start)
+char	*clean_instructions(char *line, t_instruction instruction)
 {
 	char	**line_split;
 	int		instruction_passed;
@@ -117,12 +127,6 @@ char	**split_instructions(char *line, t_instruction instruction, int start)
 	int		j;
 
 	i = 0;
-	if (start)
-	{
-		while (line[i] != LABEL_CHAR)
-			i++;
-		i++;
-	}
 	line_split = NULL;
 	instruction_passed = 0;
 	while (line[i] && !instruction_passed)
@@ -141,17 +145,7 @@ char	**split_instructions(char *line, t_instruction instruction, int start)
 		}
 		i++;
 	}
-	while (line[i])
-	{
-		while (instruction_passed && i > 0 && line[i + 1] && line[i] == ' ') 
-			line = delete_redudant_char(line, i);
-		i++;
-	}
-	//ft_printf("[[blue]]%s\n[[end]]", line);
-	//sleep(45);
-	if (!(line_split = ft_split_whitespaces(line)))
-		ft_myexit("error in ft_split");
-	return (line_split);
+	return (line = check_white_space_redudancy(line, i));
 }
 
 int		cut_comment(char **line)
@@ -199,44 +193,46 @@ void	check_instructions(char *line, t_instruction instruction)
 {
 	char	**line_split;
 	int		i;
-	int		start;
+	int		label;
 
 	i = 0;
-	start = 0;
-	if (!(cut_comment(&line)))
-		return ;
-	if (check_if_label(line))
-		start = 1;
-	line_split = split_instructions(line, instruction, start);
-	if (start && !line_split[1])
+	label = 0;
+	if ((label = check_if_label(line)))
 	{
-		ft_tabdel((void***)&line_split);
-		return ;
+		while (line[i] != LABEL_CHAR)
+			i++;
+		i++;
 	}
-	while (ft_strcmp(line_split[start], instruction.names[i]) && i < INSTRUCT_NBR)
+	line = clean_instructions(&line[i], instruction);
+	if (!(line_split = ft_split_whitespaces(line)))
+		ft_myexit("error in ft_split");
+	if (label && !line_split[1])
+		return (ft_tabdel((void***)&line_split));
+	i = 0;
+	while (ft_strcmp(line_split[label], instruction.names[i]) && i < INSTRUCT_NBR)
 		i++;
 	if (i == INSTRUCT_NBR)
-	{
-		// You should here check if what you got is a label followed by instructions
-		ft_myexit(ft_strjoin("bad instruction name : ", line_split[start]));
-	}
-	check_instruction_arguments(line_split[1 + start], i, instruction);
+		ft_myexit(ft_strjoin("bad instruction name : ", line_split[label]));
+	check_instruction_arguments(line_split[1 + label], i, instruction);
 	ft_tabdel((void***)&line_split);
 }
 
-void	read_instructions(int fd_read, int fd_write)
+void	read_instructions(int fd_read)
 {
 	int				ret;
 	char			*buf;
 	t_instruction	instructions;
 
 	buf = NULL;
-	(void)fd_write;
 	instructions = set_instructions();
 	while ((ret = get_next_line(fd_read, &buf, '\n') > 0))
 	{
 		if (ft_strlen(buf) > 0)
+		{
+			if (!(cut_comment(&buf)))
+				return ;
 			check_instructions(buf, instructions);
+		}
 		ft_memdel((void**)&buf);
 	}
 	if (ret < 0)
@@ -260,10 +256,8 @@ int		main(int ac, char **av)
 	fd_write = open(name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	if (fd_read <= 0 || fd_write <= 0)
 		ft_myexit("Open error");
-	// you should check instructions and name and comment before inputing
-//	input_magic(fd_write);
-	output_name_comment(fd_read, &info, PROG_NAME_LENGTH);
-	read_instructions(fd_read, fd_write);
+	store_name_comment(fd_read, &info, PROG_NAME_LENGTH);
+	read_instructions(fd_read);
 	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
 	sleep(45);
 }
