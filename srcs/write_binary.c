@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 10:49:29 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/20 18:45:02 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,9 @@ void	output_name_comment(int fd_read, int fd_write, int which)
 	char	*buf;
 	char	**split;
 	char	name[which];
-	int		i;
 
 	buf = NULL;
 	split = NULL;
-	i = 7;
 	if (get_next_line(fd_read, &buf, '\n') <= 0)
 		ft_myexit("You passed an empty or incomplete file");
 	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH) || (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
@@ -82,10 +80,12 @@ void	output_name_comment(int fd_read, int fd_write, int which)
 	if ((ft_strlen(split[1]) > PROG_NAME_LENGTH && which == PROG_NAME_LENGTH) || (ft_strlen(split[1]) > COMMENT_LENGTH && which == COMMENT_LENGTH))
 		ft_myexit("Your champion's name or your comment is too long");
 	ft_memdel((void**)&buf);
-	ft_memset(name, 0, which);
-	ft_memcpy(name, split[1], ft_strlen(split[1]));
-	write(fd_write, name, which);
-	write(fd_write, "\0\0\0\0\0\0\0\0", 8);
+	(void)name;
+	(void)fd_write;
+//	ft_memset(name, 0, which);
+	//ft_memcpy(name, split[1], ft_strlen(split[1]));
+//	write(fd_write, name, which);
+//	write(fd_write, "\0\0\0\0\0\0\0\0", 8);
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
 		output_name_comment(fd_read, fd_write, COMMENT_LENGTH); 

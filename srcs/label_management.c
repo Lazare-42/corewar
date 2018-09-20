@@ -24,7 +24,6 @@ t_label		*label_list(char	*label, int is_anchor)
 	t_label			*tmp;
 
 	tmp = label_list;
-	ft_printf("[[blue]]this is label %s\n[[end]]", label);
 	if (label)
 		new = new_label(label, is_anchor);
 	else

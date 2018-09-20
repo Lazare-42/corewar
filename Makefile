@@ -3,6 +3,7 @@ NAME = asm
 SOURCES =	main.c \
 			instruction_parameter.c \
 			label_management.c \
+			write_binary.c \
 
 LIBDIR = libft
 
@@ -10,7 +11,7 @@ SDIR = srcs
 
 ODIR = bin
 
-CFLAGS = -Werror -Wall -Wextra -Ofast -fsanitize=address
+CFLAGS = -Werror -Wall -Wextra -Ofast #-fsanitize=address
 
 INCDIR = includes
 
