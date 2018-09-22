@@ -13,6 +13,7 @@
 #include "../libft/includes/libft.h"
 #include "../includes/asm.h"
 #include <fcntl.h>
+#include <stdlib.h>
 
 //this is for the sleep which is tracking leaks
 #include <unistd.h>
@@ -217,47 +218,98 @@ void	check_instructions(char *line, t_instruction instruction)
 	ft_tabdel((void***)&line_split);
 }
 
-void	read_instructions(int fd_read)
+void	read_instructions(t_info *info)
 {
-	int				ret;
-	char			*buf;
-	t_instruction	instructions;
-
-	buf = NULL;
-	instructions = set_instructions();
-	while ((ret = get_next_line(fd_read, &buf, '\n') > 0))
+	while (info->file_read[info->file_lines_nbr])
 	{
-		if (ft_strlen(buf) > 0)
+		if (ft_strlen(info->file_read[info->file_lines_nbr]) > 0)
 		{
-			if (!(cut_comment(&buf)))
+			if (!(cut_comment(&(info->file_read[info->file_lines_nbr]))))
 				return ;
-			check_instructions(buf, instructions);
+			check_instructions(info->file_read[info->file_lines_nbr], info->instructions);
 		}
-		ft_memdel((void**)&buf);
+		info->file_lines_nbr++;
 	}
-	if (ret < 0)
+}
+
+void	set_name_open_fd(t_info *info, t_fd *fd, char *to_open)
+{
+	ft_memcpy(info->file_name, to_open, ft_strlen(to_open));
+	ft_memcpy(&(info->file_name[ft_strlen(to_open) - 1]), "cor", 3);
+	fd->read = open(to_open, O_RDONLY);
+	if (fd->read <= 0)
+		ft_myexit("Open error");
+}
+
+char	**file_lines(int nbr, char	**file_lines)
+{
+	char	**new;
+	int		i;
+
+	new = NULL;
+	i = 0;
+	if (!(new = malloc(sizeof(char *) * nbr)))
+		ft_myexit("malloc error in file_lines");
+	while (i < nbr)
+	{
+		new[i] = NULL;
+		i++;
+	}
+	if (file_lines)
+	{
+		i = 0;
+		while (i < nbr / 2)
+		{
+			new[i] = file_lines[i];
+			i++;
+		}
+		ft_tabdel((void***)&file_lines);
+	}
+	return (file_lines = new);
+}
+
+void	read_file(t_info *info, t_fd fd)
+{
+	int		gnl_ret;
+	char	*buf;
+	int		i;
+
+	i = 0;
+	info->file_read = NULL;
+	info->file_lines_nbr = FILE_INITIAL_SIZE;
+	info->file_read = file_lines(FILE_INITIAL_SIZE, info->file_read);
+	while ((gnl_ret = get_next_line(fd.read, &buf, '\n')) > 0)
+	{
+		if (i >= info->file_lines_nbr)
+		{
+			info->file_lines_nbr *= 2;
+			info->file_read = file_lines(info->file_lines_nbr, info->file_read);
+		}
+		(info->file_read)[i] = buf;
+		i++;
+	}
+	if (gnl_ret < 0)
 		ft_myexit("get_next_line error");
 }
 
+//	fd.write = open(info.file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+
 int		main(int ac, char **av)
 {
-	int		fd_read;
-	int		fd_write;
-	int		strlen;
-	char	name[256];
+	t_fd	fd;
+	t_info	info;
 
-	t_header info;
-
+	fd.read = -1;
+	fd.write = -1;
+	info.instructions = set_instructions(); 
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
-	strlen = ft_strlen(av[1]);
-	ft_memcpy(name, av[1], strlen);
-	ft_memcpy(&name[strlen - 1], "cor", 3); fd_read = open(av[1], O_RDONLY);
-	fd_write = open(name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
-	if (fd_read <= 0 || fd_write <= 0)
-		ft_myexit("Open error");
-	store_name_comment(fd_read, &info, PROG_NAME_LENGTH);
-	read_instructions(fd_read);
+	set_name_open_fd(&info, &fd, av[1]);
+	read_file(&info, fd);
+	info.file_lines_nbr = 0;
+	store_name_comment(&info, PROG_NAME_LENGTH);
+	ft_printf("%sis name %s is comment\n", info.header.prog_name, info.header.comment);
+	read_instructions(&info);
 	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
 	sleep(45);
 }

@@ -59,32 +59,23 @@ void	convert_to_bytecode(char **result, void *to_convert, int name_or_comment)
 	}
 }
 
-void	store_name_comment(int fd_read, t_header *info, int which)
+void	store_name_comment(t_info *info, int which)
 {
-	char	*buf;
 	char	**split;
 
-	buf = NULL;
 	split = NULL;
-	if (get_next_line(fd_read, &buf, '\n') <= 0)
-		ft_myexit("You passed an empty or incomplete file");
-	while ((!(ft_strstr(buf, ".name")) && which == PROG_NAME_LENGTH)
-		|| (!(ft_strstr(buf, ".comment")) && which == COMMENT_LENGTH))
-	{
-		ft_memdel((void**)&buf);
-		if (get_next_line(fd_read, &buf, '\n') <= 0)
-			ft_myexit("You passed an empty or incomplete file");
-	}
-	if (!(split = (ft_split_char(buf, '\"'))) || !split[1])
+	while ((!(ft_strstr(info->file_read[info->file_lines_nbr], ".name")) && which == PROG_NAME_LENGTH)
+		|| (!(ft_strstr(info->file_read[info->file_lines_nbr], ".comment")) && which == COMMENT_LENGTH))
+		info->file_lines_nbr++;
+	if (!(split = (ft_split_char(info->file_read[info->file_lines_nbr], '\"'))) || !split[1])
 		ft_myexit("malloc error or invalid split");
 	if ((int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
-	ft_memdel((void**)&buf);
 	ft_memcpy(which == (PROG_NAME_LENGTH) ?
-	info->prog_name : info->comment, split[1], ft_strlen(split[1]));
+	info->header.prog_name : info->header.comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
-		store_name_comment(fd_read, info, COMMENT_LENGTH); 
+		store_name_comment(info, COMMENT_LENGTH); 
 }
 
 void	printbits(int nbr)
