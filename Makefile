@@ -2,6 +2,7 @@ NAME = asm
 
 SOURCES =	main.c \
 			instruction_parameter.c \
+			read_file.c \
 			label_management.c \
 			write_binary.c \
 

@@ -6,14 +6,12 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 22:48:47 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/22 20:00:18 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/includes/libft.h"
 #include "../includes/asm.h"
-#include <fcntl.h>
-#include <stdlib.h>
 
 //this is for the sleep which is tracking leaks
 #include <unistd.h>
@@ -120,33 +118,30 @@ char	*check_white_space_redudancy(char *line, int from)
 	return (line);
 }
 
-char	*clean_instructions(char *line, t_instruction instruction)
+void	clean_instructions(t_info *info, t_instruction instruction)
 {
-	char	**line_split;
-	int		instruction_passed;
 	int		i;
 	int		j;
 
 	i = 0;
-	line_split = NULL;
-	instruction_passed = 0;
-	while (line[i] && !instruction_passed)
+	ft_printf("%s\n", info->file_read[info->file_lines_nbr]);
+	while (info->file_read[info->file_lines_nbr][i])
 	{
 		j = -1;
-		while (!instruction_passed && ++j < INSTRUCT_NBR)
+		while (++j < INSTRUCT_NBR)
 		{
-			if (!(ft_memcmp(&line[i], instruction.names[j], ft_strlen(instruction.names[j]))))
+			if (!(ft_memcmp(&info->file_read[info->file_lines_nbr][i], instruction.names[j], ft_strlen(instruction.names[j]))))
 			{
-				if (line[i + ft_strlen(instruction.names[j]) + 1])
+				if (info->file_read[info->file_lines_nbr][i + ft_strlen(instruction.names[j]) + 1])
 					i += ft_strlen(instruction.names[j]) + 1;
 				else
 					ft_myexit("incomplete instruction");
-				instruction_passed = 1;
+				i++;
+				info->file_read[info->file_lines_nbr] = check_white_space_redudancy(info->file_read[info->file_lines_nbr], i);
 			}
 		}
 		i++;
 	}
-	return (line = check_white_space_redudancy(line, i));
 }
 
 int		cut_comment(char **line)
@@ -189,110 +184,52 @@ int		check_if_label(char *line)
 	return (0);
 }
 
-#include <unistd.h>
-void	check_instructions(char *line, t_instruction instruction)
+void	check_instructions(t_info *info)
 {
-	char	**line_split;
+	char	**instruct_split;
 	int		i;
 	int		label;
 
 	i = 0;
 	label = 0;
-	if ((label = check_if_label(line)))
+	instruct_split = NULL;
+	if ((label = check_if_label(info->file_read[info->file_lines_nbr])))
 	{
-		while (line[i] != LABEL_CHAR)
+		while (info->file_read[info->file_lines_nbr][i] != LABEL_CHAR)
 			i++;
 		i++;
 	}
-	line = clean_instructions(&line[i], instruction);
-	if (!(line_split = ft_split_whitespaces(line)))
+	clean_instructions(info, info->instructions);
+	if (!(instruct_split = ft_split_whitespaces(info->file_read[info->file_lines_nbr])))
 		ft_myexit("error in ft_split");
-	if (label && !line_split[1])
-		return (ft_tabdel((void***)&line_split));
+	if ((label && !instruct_split[1]) || !instruct_split[0])
+		return (ft_tabdel((void***)&instruct_split));
 	i = 0;
-	while (ft_strcmp(line_split[label], instruction.names[i]) && i < INSTRUCT_NBR)
+	while (ft_strcmp(instruct_split[label], info->instructions.names[i]) && i < INSTRUCT_NBR)
 		i++;
 	if (i == INSTRUCT_NBR)
-		ft_myexit(ft_strjoin("bad instruction name : ", line_split[label]));
-	check_instruction_arguments(line_split[1 + label], i, instruction);
-	ft_tabdel((void***)&line_split);
+		ft_myexit(ft_strjoin("bad info->instructions name : ", instruct_split[label]));
+	check_instruction_arguments(instruct_split[1 + label], i, info->instructions);
+	ft_tabdel((void***)&instruct_split);
 }
 
 void	read_instructions(t_info *info)
 {
+	info->file_lines_nbr++;
 	while (info->file_read[info->file_lines_nbr])
 	{
 		if (ft_strlen(info->file_read[info->file_lines_nbr]) > 0)
 		{
-			if (!(cut_comment(&(info->file_read[info->file_lines_nbr]))))
-				return ;
-			check_instructions(info->file_read[info->file_lines_nbr], info->instructions);
+			if ((cut_comment(&(info->file_read[info->file_lines_nbr]))))
+				check_instructions(info);
+			ft_printf("%s\n", info->file_read[info->file_lines_nbr]);
 		}
 		info->file_lines_nbr++;
 	}
 }
 
-void	set_name_open_fd(t_info *info, t_fd *fd, char *to_open)
-{
-	ft_memcpy(info->file_name, to_open, ft_strlen(to_open));
-	ft_memcpy(&(info->file_name[ft_strlen(to_open) - 1]), "cor", 3);
-	fd->read = open(to_open, O_RDONLY);
-	if (fd->read <= 0)
-		ft_myexit("Open error");
-}
-
-char	**file_lines(int nbr, char	**file_lines)
-{
-	char	**new;
-	int		i;
-
-	new = NULL;
-	i = 0;
-	if (!(new = malloc(sizeof(char *) * nbr)))
-		ft_myexit("malloc error in file_lines");
-	while (i < nbr)
-	{
-		new[i] = NULL;
-		i++;
-	}
-	if (file_lines)
-	{
-		i = 0;
-		while (i < nbr / 2)
-		{
-			new[i] = file_lines[i];
-			i++;
-		}
-		ft_tabdel((void***)&file_lines);
-	}
-	return (file_lines = new);
-}
-
-void	read_file(t_info *info, t_fd fd)
-{
-	int		gnl_ret;
-	char	*buf;
-	int		i;
-
-	i = 0;
-	info->file_read = NULL;
-	info->file_lines_nbr = FILE_INITIAL_SIZE;
-	info->file_read = file_lines(FILE_INITIAL_SIZE, info->file_read);
-	while ((gnl_ret = get_next_line(fd.read, &buf, '\n')) > 0)
-	{
-		if (i >= info->file_lines_nbr)
-		{
-			info->file_lines_nbr *= 2;
-			info->file_read = file_lines(info->file_lines_nbr, info->file_read);
-		}
-		(info->file_read)[i] = buf;
-		i++;
-	}
-	if (gnl_ret < 0)
-		ft_myexit("get_next_line error");
-}
-
 //	fd.write = open(info.file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+
 
 int		main(int ac, char **av)
 {
@@ -308,7 +245,6 @@ int		main(int ac, char **av)
 	read_file(&info, fd);
 	info.file_lines_nbr = 0;
 	store_name_comment(&info, PROG_NAME_LENGTH);
-	ft_printf("%sis name %s is comment\n", info.header.prog_name, info.header.comment);
 	read_instructions(&info);
 	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
 	sleep(45);
