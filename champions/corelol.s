@@ -10,3 +10,4 @@ hello:
 alive:
 	live	%0
 	zjmp	%:alive
+	zjmp	%:coucou
