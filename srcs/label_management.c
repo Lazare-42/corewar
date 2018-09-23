@@ -17,9 +17,8 @@ static t_label	*new_label(char *name, int is_anchor)
 	return (new);
 }
 
-t_label		*label_list(char	*label, int is_anchor)
+void	label_list(t_info *info, char	*label, int is_anchor)
 {
-	static t_label	*label_list = NULL;
 	t_label			*new;
 	t_label			*tmp;
 
