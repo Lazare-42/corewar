@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/22 20:00:18 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/23 15:32:24 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	check_1_command(t_info *info, char *command, char match)
 	{
 	if (command[0] == DIRECT_CHAR)
 			if (command[1] == LABEL_CHAR)
-				(label_list(info, &command[2], 0));
+				(label_list(&(info->label_info), &command[2], 0));
 					return ;
 		if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
 			return ; 
@@ -174,7 +174,7 @@ int		check_if_label(char *line, t_info *info)
 	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
 	{
 		to_check[ft_strlen(to_check) - 1] = 0;
-		label_list(info, to_check, 1);
+		label_list(&(info->label_info), to_check, 1);
 		ft_tabdel((void***)&tmp);
 		return (1);
 	}
@@ -226,7 +226,6 @@ void	read_instructions(t_info *info, t_instruction instructions)
 
 //	fd.write = open(info.file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 
-
 int		main(int ac, char **av)
 {
 	t_fd			fd;
@@ -236,8 +235,9 @@ int		main(int ac, char **av)
 	fd.read = -1;
 	fd.write = -1;
 	instructions = set_instructions(); 
-	info.label_list = NULL;
-	info.label_categories = 0;
+	info.label_info.label_list = NULL;
+	info.label_info.label_categories = LABEL_INITIAL_NBR;
+	info.label_info.n = 0;
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
 	set_name_open_fd(&info, &fd, av[1]);
@@ -245,6 +245,7 @@ int		main(int ac, char **av)
 	info.file_lines_nbr = 0;
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	read_instructions(&info, instructions);
-	ft_printf("[[red]][[bold]]YOU ARE DONE PARSING !!![[end]]");
+	print_label_list(&(info.label_info));
+	ft_printf("[[red]][[bold]]DONE PARSING[[end]]");
 	sleep(45);
 }
