@@ -1,5 +1,5 @@
 .name		"Gédéon le Cochon"
-.comment	"Tout est bon dans Gédéon"
+.comment	""
 
 tmp:
 	sti		r1, %:youshallnotpass, %1

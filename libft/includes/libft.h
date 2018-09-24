@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/12/18 15:27:37 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/08/23 12:37:33 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 15:40:21 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,7 +237,9 @@ char				*ft_u_base_converter(int base_size,
 		uintmax_t number, int sizeof_var);
 char				ft_mins_to_caps(char c);
 void				*ft_symetric_byte_swap(void	*ptr, int size);
-int					ft_check_endianness(void);
+int					ft_check_little_endianness(void);
+unsigned long long	little_endian_to_big(unsigned long long src,
+		int sizeof_var);
 char				*print_bits(void *ptr, int size);
 t_color_compound	ft_decompose_color(int color);
 void				find_arg_len(va_list ap, t_printf *argument_specs);

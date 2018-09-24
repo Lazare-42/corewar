@@ -2,7 +2,7 @@
 #include "../libft/includes/libft.h"
 #include <stdlib.h>
 
-static t_label	*new_malloced_label(char *name, int is_anchor)
+static t_label	*new_malloced_label(char *name, int is_anchor, int position)
 {
 	t_label *new;
 
@@ -12,12 +12,12 @@ static t_label	*new_malloced_label(char *name, int is_anchor)
 	if (!(new->name = ft_strdup(name)))
 		ft_myexit("malloc error");
 	new->next = NULL;
-	new->position = 0;
+	new->position = position;
 	new->anchor = (is_anchor) ? 1 : 0;
 	return (new);
 }
 
-static t_label new_label(char *name, int is_anchor)
+static t_label new_label(char *name, int is_anchor, int position)
 {
 	t_label new;
 
@@ -25,7 +25,7 @@ static t_label new_label(char *name, int is_anchor)
 	if (!(new.name = ft_strdup(name)))
 		ft_myexit("malloc error");
 	new.next = NULL;
-	new.position = 0;
+	new.position = position;
 	new.anchor = (is_anchor) ? 1 : 0;
 	return (new);
 }
@@ -51,11 +51,8 @@ void	create_label_list(t_label_info *info)
 	info->label_list = new_label_list;
 }
 
-void	add_new_label_type(t_label_info *info, char *label, int is_anchor, int i)
+void	add_new_label_type(t_label_info *info, t_label new, int i)
 {
-	t_label		new;
-
-	new = new_label(label, is_anchor);
 	info->n++;
 	if (info->n == info->label_categories)
 	{
@@ -76,16 +73,16 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 	(info->label_list)[i].position = position;
 }
 
-void	add_label_to_list(t_label_info *info, char *label, int is_anchor)
+void	add_label_to_list(t_label_info *info, char *label, int is_anchor, int position)
 {
 	int			i;
 	int			strlen_cmp;
 	int			strlen_new;
 	t_label		*tmp;
 
-	i = 0;
+	i = -1;
 	strlen_new = ft_strlen(label);
-	while (i < info->n)
+	while (++i < info->n)
 	{
 		strlen_cmp = ft_strlen((info->label_list)[i].name);
 		if (strlen_cmp == strlen_new
@@ -94,21 +91,20 @@ void	add_label_to_list(t_label_info *info, char *label, int is_anchor)
 			tmp = &(info->label_list)[i];
 			while (tmp->next)
 				tmp = tmp->next;
-			tmp->next = new_malloced_label(label, is_anchor);
+			tmp->next = new_malloced_label(label, is_anchor, position);
 			if (((t_label*)tmp->next)->anchor)
 				put_anchor_first(info, i, ((t_label*)tmp->next));
 			return ;
 		}
-		i++;
 	}
-	add_new_label_type(info, label, is_anchor, i);
+	add_new_label_type(info, new_label(label, is_anchor, position), i);
 }
 
-void	label_list(t_label_info *info, char	*label, int is_anchor)
+void	label_list(t_label_info *info, char	*label, int is_anchor, int position)
 {
 	if (!(info->label_list))
 		create_label_list(info);
-	add_label_to_list(info, label, is_anchor);
+	add_label_to_list(info, label, is_anchor, position);
 }
 
 void	print_label_list(t_label_info *info)

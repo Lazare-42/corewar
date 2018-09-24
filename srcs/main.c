@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 15:06:21 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 21:11:37 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,18 +33,11 @@ void	malloc_resize_write_size(t_info *info)
 		ft_myexit("malloc error in malloc_resize_write_size");
 	if (info->to_write_size != INITIAL_WRITE_SIZE)
 	{
-		debug();
 		ft_memcpy(new_buffer, info->to_write, info->to_write_size / 2);
 		ft_memdel((void**)&(info->to_write));
 	}
 	info->to_write = new_buffer;
 }
-
-/*
-   void	write_instruction(t_info *info, int instruction_nbr)
-   {
-   }
-   */
 
 char	check_1_command(t_info *info, char *command, char match)
 {
@@ -53,7 +46,7 @@ char	check_1_command(t_info *info, char *command, char match)
 	{
 		if (command[0] == DIRECT_CHAR)
 			if (command[1] == LABEL_CHAR)
-				(label_list(&(info->label_info), &command[2], 0)); // you should'nt store the label here as you do not know its position yet
+				(label_list(&(info->label_info), &command[2], 0, info->write_pos)); // you should'nt store the label here as you do not know its position yet
 				return (DIR_CODE);
 		if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
 			return (DIR_CODE);
@@ -74,6 +67,51 @@ char	check_1_command(t_info *info, char *command, char match)
 	ft_myexit(ft_strjoin(command, " (command) invoked with the wrong argument")); 
 	return (0);
 }
+
+void	write_instruction(t_info *info, unsigned char command_binary, char **all_commands)
+{
+	int					read_command_binary;
+	int					little_endian;
+	short				indirection;
+	int					reg_ind;
+
+	read_command_binary = 6;
+	little_endian = ft_check_little_endianness();
+	//ft_printf("%llb is command_binary\n", 2, command_binary);
+	while ((command_binary >> read_command_binary) & 3 && read_command_binary >= 2)
+	{
+	//	ft_printf("%llb is command_binary %llb\n", 2, command_binary >> read_command_binary & 3);
+		if (((command_binary >> read_command_binary) & 3) == REG_CODE)
+		{
+			info->write_pos += REG_SIZE;
+		}
+		else if (((command_binary >> read_command_binary) & 3)== IND_CODE)
+		{
+			if (all_commands[3 - read_command_binary / 2][0] != LABEL_CHAR)
+			{
+				indirection = ft_atoi(&all_commands[3 - read_command_binary / 2][0]);
+				if (little_endian)
+					indirection = little_endian_to_big(indirection, sizeof(short));
+			}
+			info->write_pos += IND_SIZE;
+		}
+		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
+		{
+			if (all_commands[3 - read_command_binary / 2][1] == LABEL_CHAR)
+				(label_list(&(info->label_info), &all_commands[3 - read_command_binary / 2][2], 0, info->write_pos));
+			else
+			{
+				reg_ind = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
+				if (little_endian)
+					reg_ind = little_endian_to_big(reg_ind, sizeof(int));
+				ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, sizeof(int));
+			}
+			info->write_pos += DIR_SIZE;
+		}
+		read_command_binary -= 2;
+	}
+}
+
 
 int		double_separator(char *commands)
 {
@@ -97,7 +135,7 @@ int		double_separator(char *commands)
 	return (ret);
 }
 
-void	write_instruction(t_info *info, unsigned char command_binary, int instruction_nbr)
+void	write_instruction_info(t_info *info, unsigned char command_binary, int instruction_nbr)
 {
 	int		command_size;
 	int		read_command_binary;
@@ -108,7 +146,7 @@ void	write_instruction(t_info *info, unsigned char command_binary, int instructi
 		malloc_resize_write_size(info);
 	(info->to_write)[info->write_pos] = (char)instruction_nbr;
 	info->write_pos += 1;
-	(info->to_write)[info->write_pos] = command_binary;
+	(info->to_write)[info->write_pos] = command_binary >> 1;
 	info->write_pos += 1;
 	while (read_command_binary >= 2)
 	{
@@ -142,9 +180,13 @@ void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruct
 	if (command_size != instructions.instruct_arg[i][0])
 		ft_myexit(ft_strjoin("incorrect argument number passed to instruction : ", instructions.names[i]));
 	while (++j < command_size)
+	{
 		command_binary |= check_1_command(info, all_commands[(int)j],
 			 	instructions.instruct_arg[i][(int)j + 1]) << (6 - j * 2);
-	write_instruction(info, command_binary, i + 1);
+		ft_printf("%hhb is command_binary and command_size is %d\n", 2, command_binary, command_size);
+	}
+	write_instruction_info(info, command_binary, i + 1);
+	write_instruction(info, command_binary, all_commands);
 	// I can here send to a function that will write the command ; the arguments types and save the label position
 	ft_tabdel((void***)&all_commands);
 }
@@ -231,7 +273,8 @@ int		check_if_label(char *line, t_info *info)
 	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
 	{
 		to_check[ft_strlen(to_check) - 1] = 0;
-		label_list(&(info->label_info), to_check, 1);
+		label_list(&(info->label_info), to_check, 1, info->write_pos);
+		// you should here increment write position
 		ft_tabdel((void***)&tmp);
 		return (1);
 	}
@@ -286,9 +329,7 @@ void	write_file(t_fd fd, t_info *info)
 {
 	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	ft_printf("info->file_name : %s\n", info->file_name);
-	ft_memcpy(info->to_write, &info->header.magic, sizeof(unsigned int));
-	ft_memcpy(info->to_write + sizeof(unsigned int), info->header.prog_name, PROG_NAME_LENGTH + 8);
-	ft_memcpy(info->to_write + PROG_NAME_LENGTH + 8 + sizeof(unsigned int), info->header.comment, COMMENT_LENGTH);
+	ft_memcpy(info->to_write, &info->header, sizeof(info->header));
 	write(fd.write, info->to_write, info->write_pos);
 	close(fd.write);
 }
@@ -317,9 +358,8 @@ int		main(int ac, char **av)
 	info.file_lines_nbr = 0;
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	read_instructions(&info, instructions);
-	//print_label_list(&(info.label_info));
+	print_label_list(&(info.label_info));
 	write_file(fd, &info);
 	close(fd.read);
-	ft_printf("[[red]][[bold]]DONE PARSING[[end]]\n");
 //	sleep(45);
 }

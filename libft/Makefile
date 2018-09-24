@@ -17,7 +17,7 @@ SRCS =			ft_advance_for_quotes.c \
       			ft_atoi.c \
 				ft_strdiff.c \
       			ft_bzero.c \
-      			ft_check_endianness.c \
+      			ft_little_endianness.c \
       			ft_debug.c \
       			ft_del_tab_str.c \
       			ft_double_size.c \

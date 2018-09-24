@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 14:20:47 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 15:47:43 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ typedef struct		s_info
 }					t_info;
 
 t_instruction	set_instructions(void);
-void		label_list(t_label_info *info, char	*label, int is_anchor);
+void		label_list(t_label_info *info, char	*label, int is_anchor, int position);
 void		store_name_comment(t_info *info, int which);
 void		set_name_open_fd(t_info *info, t_fd *fd, char *to_open);
 void		read_file(t_info *info, t_fd fd);
