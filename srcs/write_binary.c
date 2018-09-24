@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/20 21:47:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 14:33:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,8 @@
 #include "../includes/asm.h"
 #include <stdlib.h>
 #include <unistd.h>
+
+void	input_magic(t_info *info);
 
 int		little_endian_to_big(int src)
 {
@@ -71,11 +73,17 @@ void	store_name_comment(t_info *info, int which)
 		ft_myexit("malloc error or invalid split");
 	if ((int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
+	ft_memset(which == PROG_NAME_LENGTH ? info->header.prog_name :
+	info->header.comment, 0, which == PROG_NAME_LENGTH ?
+	PROG_NAME_LENGTH + 1 : COMMENT_LENGTH + 1);
 	ft_memcpy(which == (PROG_NAME_LENGTH) ?
 	info->header.prog_name : info->header.comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
+	{
+		input_magic(info);
 		store_name_comment(info, COMMENT_LENGTH); 
+	}
 }
 
 void	printbits(int nbr)
@@ -97,12 +105,11 @@ void	printbits(int nbr)
 	ft_printf("\n");
 }
 
-void	input_magic(int fd_write)
+void	input_magic(t_info *info)
 {
-	int				magic_nbr;
-
-	magic_nbr = COREWAR_EXEC_MAGIC;
+	info->header.magic = COREWAR_EXEC_MAGIC;
 	if (ft_check_endianness())
-		magic_nbr = little_endian_to_big(magic_nbr);
-	write(fd_write, &magic_nbr, 4);
+		info->header.magic = little_endian_to_big(COREWAR_EXEC_MAGIC);
+	else
+		info->header.magic = COREWAR_EXEC_MAGIC;
 }
