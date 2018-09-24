@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 14:35:31 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 15:06:21 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -287,8 +287,8 @@ void	write_file(t_fd fd, t_info *info)
 	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	ft_printf("info->file_name : %s\n", info->file_name);
 	ft_memcpy(info->to_write, &info->header.magic, sizeof(unsigned int));
-	ft_memcpy(info->to_write + sizeof(unsigned int), info->header.prog_name, PROG_NAME_LENGTH + 1);
-	ft_memcpy(info->to_write + PROG_NAME_LENGTH + 8 + sizeof(unsigned int), info->header.comment, COMMENT_LENGTH + 1);
+	ft_memcpy(info->to_write + sizeof(unsigned int), info->header.prog_name, PROG_NAME_LENGTH + 8);
+	ft_memcpy(info->to_write + PROG_NAME_LENGTH + 8 + sizeof(unsigned int), info->header.comment, COMMENT_LENGTH);
 	write(fd.write, info->to_write, info->write_pos);
 	close(fd.write);
 }

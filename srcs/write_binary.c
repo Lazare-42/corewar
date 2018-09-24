@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 14:33:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/24 15:05:12 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void	store_name_comment(t_info *info, int which)
 		ft_myexit("Your champion's name or your comment is too long");
 	ft_memset(which == PROG_NAME_LENGTH ? info->header.prog_name :
 	info->header.comment, 0, which == PROG_NAME_LENGTH ?
-	PROG_NAME_LENGTH + 1 : COMMENT_LENGTH + 1);
+	PROG_NAME_LENGTH : COMMENT_LENGTH);
 	ft_memcpy(which == (PROG_NAME_LENGTH) ?
 	info->header.prog_name : info->header.comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
