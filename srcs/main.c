@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/25 09:56:26 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/25 16:50:57 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,9 +29,10 @@ void	malloc_resize_write_size(t_info *info)
 	new_buffer = NULL;
 	if (info->to_write)
 		info->to_write_size *= 2;
-	if (!(new_buffer = calloc(sizeof(char) * info->to_write_size, 0)))
+	if (!(new_buffer = malloc(sizeof(char) * info->to_write_size)))
 		ft_myexit("malloc error in malloc_resize_write_size");
-	if (info->to_write_size != INITIAL_WRITE_SIZE)
+	ft_memset(new_buffer, 0, info->to_write_size);
+	if (info->to_write_size != sizeof(info->header))
 	{
 		ft_memcpy(new_buffer, info->to_write, info->to_write_size / 2);
 		ft_memdel((void**)&(info->to_write));
@@ -39,16 +40,12 @@ void	malloc_resize_write_size(t_info *info)
 	info->to_write = new_buffer;
 }
 
-char	check_1_command(t_info *info, char *command, char match)
+char	check_1_command(char *command, char match)
 {
 	// you should return a function to check DIRECT_CHAR / LABEL_CHAR / etc
 	if (match & T_DIR)
 	{
-		if (command[0] == DIRECT_CHAR)
-			if (command[1] == LABEL_CHAR)
-				(label_list(&(info->label_info), &command[2], 0, info->write_pos)); // you should'nt store the label here as you do not know its position yet
-				return (DIR_CODE);
-		if (ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2]))) //ft_atoi(command[1]);
+		if ((command[0] == DIRECT_CHAR && command[1]) && ((command[1] == LABEL_CHAR) || ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2])))) 
 			return (DIR_CODE);
 	}
 	if (match & T_IND)
@@ -140,15 +137,20 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 {
 	int		command_size;
 	int		read_command_binary;
+	char	void_command_check;
 
 	command_size = 0;
 	read_command_binary = 6;
+	void_command_check = 0xff;
 	if ((info->write_pos + COMMAND_INSTRUCTIONS) >= info->to_write_size)
 		malloc_resize_write_size(info);
 	(info->to_write)[info->write_pos] = (char)instruction_nbr;
 	info->write_pos += 1;
-	(info->to_write)[info->write_pos] = command_binary;
-	info->write_pos += 1;
+	if ((char)(command_binary << 2) || instruction_nbr == 16)
+	{
+		(info->to_write)[info->write_pos] = command_binary;
+		info->write_pos += 1;
+	}
 	while (read_command_binary >= 2)
 	{
 		if (command_binary >> read_command_binary == REG_CODE)
@@ -156,7 +158,7 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 		else if (command_binary >> read_command_binary == IND_CODE)
 			command_size += T_IND;
 		else if (command_binary >> read_command_binary == DIR_CODE)
-			command_size += T_DIR;
+			command_size += (instruction_nbr < 8) ? T_DIR * 2 : T_DIR;
 		read_command_binary -= 2;
 	}
 	if ((info->write_pos + command_size) > info->to_write_size)
@@ -181,11 +183,10 @@ void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruct
 	if (command_size != instructions.instruct_arg[i][0])
 		ft_myexit(ft_strjoin("incorrect argument number passed to instruction : ", instructions.names[i]));
 	while (++j < command_size)
-		command_binary |= check_1_command(info, all_commands[(int)j],
+		command_binary |= check_1_command(all_commands[(int)j],
 			 	instructions.instruct_arg[i][(int)j + 1]) << (6 - j * 2);
 	write_instruction_info(info, command_binary, i + 1);
 	write_instruction(info, command_binary, all_commands, i + 1);
-	// I can here send to a function that will write the command ; the arguments types and save the label position
 	ft_tabdel((void***)&all_commands);
 }
 
@@ -325,8 +326,12 @@ void	read_instructions(t_info *info, t_instruction instructions)
 #include <fcntl.h>
 void	write_file(t_fd fd, t_info *info)
 {
+	ft_printf("%s\n", info->file_name);
+	if (ft_check_little_endianness())
+	info->header.prog_size = little_endian_to_big(info->write_pos - sizeof(info->header), sizeof(int));
 	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
-	ft_printf("info->file_name : %s\n", info->file_name);
+	if (fd.write == -1)
+		ft_myexit("open error in write_file");
 	ft_memcpy(info->to_write, &info->header, sizeof(info->header));
 	write(fd.write, info->to_write, info->write_pos);
 	close(fd.write);
@@ -346,8 +351,8 @@ int		main(int ac, char **av)
 	info.label_info.label_categories = LABEL_INITIAL_NBR;
 	info.label_info.n = 0;
 	info.to_write = NULL;
-	info.to_write_size = INITIAL_WRITE_SIZE;
-	info.write_pos = HEADER_SIZE;
+	info.to_write_size = sizeof(info.header);
+	info.write_pos = sizeof(info.header);
 	malloc_resize_write_size(&info);
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
@@ -356,7 +361,8 @@ int		main(int ac, char **av)
 	info.file_lines_nbr = 0;
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	read_instructions(&info, instructions);
-	print_label_list(&(info.label_info));
+	check_label_list(&(info.label_info));
+	input_labels(&(info.label_info), &info);
 	write_file(fd, &info);
 	close(fd.read);
 //	sleep(45);

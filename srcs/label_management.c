@@ -107,32 +107,44 @@ void	label_list(t_label_info *info, char	*label, int is_anchor, int position)
 	add_label_to_list(info, label, is_anchor, position);
 }
 
-void	print_label_list(t_label_info *info)
+void	check_label_list(t_label_info *info)
 {
 	int			i;
-	t_label		tmp;
 
 	i = 0;
 	while (i < info->n)
 	{
-		ft_printf("[[green]] %s[[end]]", (info->label_list)[i].name);
-		if (info->label_list[i].anchor)
-			ft_printf("[[red]]X[[end]]");
-		if ((info->label_list)[i].next)
+		if (!(info->label_list[i].anchor))
+			ft_myexit(ft_strjoin("invalid label : ", info->label_list[i].name));
+		i++;
+	}
+}
+
+void	input_labels(t_label_info *label_info, t_info *info)
+{
+	int		i;
+	t_label	tmp;
+	int		pos;
+	short	distance;
+
+	i = -1;
+	while (++i < label_info->n)
+	{
+		pos = (label_info->label_list)[i].position;
+		if ((label_info->label_list)[i].next)
 		{
-			tmp = *(t_label*)((info->label_list)[i].next);
-			ft_printf("[[blue]] ->%10s[[end]]", tmp.name);
-			if (tmp.anchor)
-				ft_printf("[[red]]X[[end]]");
+			tmp = *(t_label*)((label_info->label_list)[i].next);
+			distance = 1 + pos - tmp.position;
+			if (!ft_check_little_endianness())
+				distance = little_endian_to_big(distance, sizeof(short));
+			(info->to_write)[tmp.position] = distance;
 			while (tmp.next)
 			{
+				tmp = *(t_label*)((label_info->label_list)[i].next);
+				distance = tmp.position - pos;
+				(info->to_write)[tmp.position] = distance;
 				tmp = *(t_label*)tmp.next;
-				ft_printf("[[blue]] ->%10s[[end]]", tmp.name);
-				if (tmp.anchor)
-					ft_printf("[[red]]X[[end]]");
 			}
 		}
-		ft_printf("\n");
-		i++;
 	}
 }

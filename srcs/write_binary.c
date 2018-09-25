@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 17:46:03 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/25 16:42:22 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ void	store_name_comment(t_info *info, int which)
 		ft_myexit("malloc error or invalid split");
 	if ((int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
-	info->header.prog_size = little_endian_to_big(4, sizeof(int));
 	ft_memset(which == PROG_NAME_LENGTH ? info->header.prog_name :
 	info->header.comment, 0, which == PROG_NAME_LENGTH ?
 	PROG_NAME_LENGTH : COMMENT_LENGTH);

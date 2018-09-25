@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 15:47:43 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/25 14:35:04 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,5 +68,7 @@ void		store_name_comment(t_info *info, int which);
 void		set_name_open_fd(t_info *info, t_fd *fd, char *to_open);
 void		read_file(t_info *info, t_fd fd);
 void		print_label_list(t_label_info *info);
+void		check_label_list(t_label_info *info);
+void		input_labels(t_label_info *label_info, t_info *info);
 
 #endif
