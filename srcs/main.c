@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 21:15:41 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/25 09:56:26 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,8 @@ char	check_1_command(t_info *info, char *command, char match)
 	{
 		if (command[0] == LABEL_CHAR)
 			return (IND_CODE);
-		// ok here you need to find the label's adress
 		if (ft_isdigit(command[0]) || (command[0] == '-' && ft_isdigit(command[1])))
 			return (IND_CODE);
-		// ok here you need to check if the adresse indirectly pointed to is ...a label ?
 	}
 	if (match & T_REG)
 		if (command[0] == 'r')
@@ -68,12 +66,13 @@ char	check_1_command(t_info *info, char *command, char match)
 	return (0);
 }
 
-void	write_instruction(t_info *info, unsigned char command_binary, char **all_commands)
+void	write_instruction(t_info *info, unsigned char command_binary, char **all_commands, int instruction_nbr)
 {
 	int					read_command_binary;
 	int					little_endian;
 	short				indirection;
 	int					reg_ind;
+	char				reg;
 
 	read_command_binary = 6;
 	little_endian = ft_check_little_endianness();
@@ -83,7 +82,9 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 	//	ft_printf("%llb is command_binary %llb\n", 2, command_binary >> read_command_binary & 3);
 		if (((command_binary >> read_command_binary) & 3) == REG_CODE)
 		{
-			info->write_pos += REG_SIZE;
+			reg = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
+			ft_memcpy((void*)&info->to_write[info->write_pos], &reg, sizeof(char));
+			info->write_pos += T_REG;
 		}
 		else if (((command_binary >> read_command_binary) & 3)== IND_CODE)
 		{
@@ -93,7 +94,7 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 				if (little_endian)
 					indirection = little_endian_to_big(indirection, sizeof(short));
 			}
-			info->write_pos += IND_SIZE;
+			info->write_pos += T_IND;
 		}
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
 		{
@@ -106,7 +107,7 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 					reg_ind = little_endian_to_big(reg_ind, sizeof(int));
 				ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, sizeof(int));
 			}
-			info->write_pos += DIR_SIZE;
+			info->write_pos += (instruction_nbr < 8) ? T_DIR * 2 : T_DIR;
 		}
 		read_command_binary -= 2;
 	}
@@ -146,16 +147,16 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 		malloc_resize_write_size(info);
 	(info->to_write)[info->write_pos] = (char)instruction_nbr;
 	info->write_pos += 1;
-	(info->to_write)[info->write_pos] = command_binary >> 1;
+	(info->to_write)[info->write_pos] = command_binary;
 	info->write_pos += 1;
 	while (read_command_binary >= 2)
 	{
 		if (command_binary >> read_command_binary == REG_CODE)
-			command_size += REG_SIZE;
+			command_size += T_REG;
 		else if (command_binary >> read_command_binary == IND_CODE)
-			command_size += IND_SIZE;
+			command_size += T_IND;
 		else if (command_binary >> read_command_binary == DIR_CODE)
-			command_size += DIR_SIZE;
+			command_size += T_DIR;
 		read_command_binary -= 2;
 	}
 	if ((info->write_pos + command_size) > info->to_write_size)
@@ -180,13 +181,10 @@ void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruct
 	if (command_size != instructions.instruct_arg[i][0])
 		ft_myexit(ft_strjoin("incorrect argument number passed to instruction : ", instructions.names[i]));
 	while (++j < command_size)
-	{
 		command_binary |= check_1_command(info, all_commands[(int)j],
 			 	instructions.instruct_arg[i][(int)j + 1]) << (6 - j * 2);
-		ft_printf("%hhb is command_binary and command_size is %d\n", 2, command_binary, command_size);
-	}
 	write_instruction_info(info, command_binary, i + 1);
-	write_instruction(info, command_binary, all_commands);
+	write_instruction(info, command_binary, all_commands, i + 1);
 	// I can here send to a function that will write the command ; the arguments types and save the label position
 	ft_tabdel((void***)&all_commands);
 }
