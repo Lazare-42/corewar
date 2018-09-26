@@ -120,6 +120,20 @@ void	check_label_list(t_label_info *info)
 	}
 }
 
+short	inverse_short(short srcs)
+{
+	char	*tmp;
+	char	values[2];
+	short	ret;
+
+	tmp = (void*)&srcs;
+	values[1] = *tmp;
+	tmp++;
+	values[0] = *tmp;
+	ft_memcpy(&ret, values, 2);
+	return (ret);
+}
+
 void	input_labels(t_label_info *label_info, t_info *info)
 {
 	int		i;
@@ -135,9 +149,9 @@ void	input_labels(t_label_info *label_info, t_info *info)
 		{
 			tmp = *(t_label*)((label_info->label_list)[i].next);
 			distance = 1 + pos - tmp.position;
-			if (!ft_check_little_endianness())
+			if (ft_check_little_endianness())
 				distance = little_endian_to_big(distance, sizeof(short));
-			(info->to_write)[tmp.position] = distance;
+			ft_memcpy((void*)&info->to_write[tmp.position], &distance, sizeof(short));
 			while (tmp.next)
 			{
 				tmp = *(t_label*)((label_info->label_list)[i].next);
