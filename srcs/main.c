@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/25 16:50:57 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/26 17:08:11 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -326,10 +326,12 @@ void	read_instructions(t_info *info, t_instruction instructions)
 #include <fcntl.h>
 void	write_file(t_fd fd, t_info *info)
 {
-	ft_printf("%s\n", info->file_name);
+	ft_printf("-->%s\n", info->file_name);
+	ft_printf("--->%s\n", info->header.prog_name);
 	if (ft_check_little_endianness())
 	info->header.prog_size = little_endian_to_big(info->write_pos - sizeof(info->header), sizeof(int));
-	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+	fd.write = open(info->header.prog_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	printf("OPEN FD-> %d\n", fd.write);
 	if (fd.write == -1)
 		ft_myexit("open error in write_file");
 	ft_memcpy(info->to_write, &info->header, sizeof(info->header));
@@ -362,9 +364,7 @@ int		main(int ac, char **av)
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	read_instructions(&info, instructions);
 	check_label_list(&(info.label_info));
-	print_label_list(&(info.label_info));
 	input_labels(&(info.label_info), &info);
-	debug();
 	write_file(fd, &info);
 	close(fd.read);
 //	sleep(45);

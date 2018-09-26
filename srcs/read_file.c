@@ -5,8 +5,12 @@
 
 void	set_name_open_fd(t_info *info, t_fd *fd, char *to_open)
 {
-	ft_memcpy(info->file_name, to_open, ft_strlen(to_open));
-	ft_memcpy(&(info->file_name[ft_strlen(to_open) - 1]), "cor", 3);
+	printf("->%s\n", to_open);
+	ft_memset(info->file_name, 0, 256);
+	ft_memcpy(info->file_name, "./", 2);
+	ft_memcpy(info->file_name + 2, to_open, ft_strlen(to_open));
+	ft_memcpy(info->file_name + ft_strlen(to_open) - 1 + 2, "cor", 3);
+	printf("=>%s\n", info->file_name);
 	fd->read = open(to_open, O_RDONLY);
 	if (fd->read <= 0)
 		ft_myexit("Open error");
