@@ -362,7 +362,9 @@ int		main(int ac, char **av)
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	read_instructions(&info, instructions);
 	check_label_list(&(info.label_info));
+	print_label_list(&(info.label_info));
 	input_labels(&(info.label_info), &info);
+	debug();
 	write_file(fd, &info);
 	close(fd.read);
 //	sleep(45);

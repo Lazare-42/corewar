@@ -134,6 +134,28 @@ short	inverse_short(short srcs)
 	return (ret);
 }
 
+void	print_label_list(t_label_info *label_info)
+{
+	int		i;
+	t_label	tmp;
+
+	i = -1;
+	while (++i < label_info->n)
+	{
+		if ((label_info->label_list)[i].next)
+		{
+			tmp = *(t_label*)((label_info->label_list)[i].next);
+			ft_printf("%s\n", tmp.name);
+			while (tmp.next)
+			{
+				tmp = *(t_label*)((label_info->label_list)[i].next);
+				tmp = *(t_label*)tmp.next;
+				ft_printf("%s\n", tmp.name);
+			}
+		}
+	}
+}
+
 void	input_labels(t_label_info *label_info, t_info *info)
 {
 	int		i;
