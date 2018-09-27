@@ -12,7 +12,7 @@ static t_label	*new_malloced_label(t_label to_store)
 	return (new);
 }
 
-t_label new_label(char *name, int is_anchor, int cmd_pos, int write_pos)
+t_label new_label(char *name, int cmd_pos, int write_pos)
 {
 	t_label new;
 
@@ -22,7 +22,6 @@ t_label new_label(char *name, int is_anchor, int cmd_pos, int write_pos)
 	new.next = NULL;
 	new.label_pos = cmd_pos;
 	new.write_pos = write_pos;
-	new.anchor = (is_anchor) ? 1 : 0;
 	return (new);
 }
 
@@ -63,8 +62,6 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 	int				label_pos;
 	int				write_pos;
 
-	to_swap->anchor = 0;
-	(info->label_list)[i].anchor = 1;
 	label_pos = to_swap->label_pos;
 	write_pos = to_swap->write_pos;
 	to_swap->write_pos = (info->label_list)[i].write_pos;
@@ -92,7 +89,7 @@ void	add_label_to_list(t_label_info *info, t_label new)
 			while (tmp->next)
 				tmp = tmp->next;
 			tmp->next = new_malloced_label(new);
-			if (((t_label*)tmp->next)->anchor)
+			if (!((t_label*)tmp->next)->write_pos)
 				put_anchor_first(info, i, ((t_label*)tmp->next));
 			return ;
 		}
@@ -114,7 +111,7 @@ void	check_label_list(t_label_info *info)
 	i = 0;
 	while (i < info->n)
 	{
-		if (!(info->label_list[i].anchor))
+		if (info->label_list[i].write_pos)
 			ft_myexit(ft_strjoin("invalid label : ", info->label_list[i].name));
 		i++;
 	}

@@ -38,7 +38,6 @@ typedef	struct		s_fd
 typedef struct		s_labels
 {
 	char			*name;
-	int				anchor;
 	int				label_pos;
 	int				write_pos;
 	void			*next;
@@ -73,7 +72,7 @@ void		read_file(t_info *info, t_fd fd);
 void		print_label_list(t_label_info *info);
 void		check_label_list(t_label_info *info);
 void		input_labels(t_label_info *label_info, t_info *info);
-t_label 	new_label(char *name, int is_anchor, int cmd_pos, int write_pos);
+t_label 	new_label(char *name, int cmd_pos, int write_pos);
 
 
 

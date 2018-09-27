@@ -94,7 +94,7 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
 		{
 			if (all_commands[3 - read_command_binary / 2][1] == LABEL_CHAR)
-				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][2], 0, info->cmd_begin_pos + info->cmd_size, info->write_pos));
+				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][2], info->cmd_begin_pos + info->cmd_size - 1, info->write_pos));
 			else
 			{
 				reg_ind = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
@@ -270,7 +270,7 @@ int		check_if_label(char *line, t_info *info)
 	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
 	{
 		to_check[ft_strlen(to_check) - 1] = 0;
-		label_list(&(info->label_info), new_label(to_check, 1, info->write_pos, 0));
+		label_list(&(info->label_info), new_label(to_check, info->write_pos, 0));
 		ft_tabdel((void***)&tmp);
 		return (1);
 	}
