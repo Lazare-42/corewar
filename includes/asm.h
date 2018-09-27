@@ -39,7 +39,8 @@ typedef struct		s_labels
 {
 	char			*name;
 	int				anchor;
-	int				position;
+	int				label_pos;
+	int				write_pos;
 	void			*next;
 }					t_label;
 
@@ -58,17 +59,24 @@ typedef struct		s_info
 	t_label_info	label_info;
 	t_header		header;
 	char			*to_write;
+	int				cmd_size;
+	int				cmd_begin_pos;
 	int				to_write_size;
 	int				write_pos;
 }					t_info;
 
 t_instruction	set_instructions(void);
-void		label_list(t_label_info *info, char	*label, int is_anchor, int position);
+void		label_list(t_label_info *info, t_label new);
 void		store_name_comment(t_info *info, int which);
 void		set_name_open_fd(t_info *info, t_fd *fd, char *to_open);
 void		read_file(t_info *info, t_fd fd);
 void		print_label_list(t_label_info *info);
 void		check_label_list(t_label_info *info);
 void		input_labels(t_label_info *label_info, t_info *info);
+t_label 	new_label(char *name, int is_anchor, int cmd_pos, int write_pos);
 
+
+
+
+char	*print_bits(void *ptr, int size);
 #endif

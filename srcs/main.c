@@ -73,10 +73,8 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 
 	read_command_binary = 6;
 	little_endian = ft_check_little_endianness();
-	//ft_printf("%llb is command_binary\n", 2, command_binary);
 	while ((command_binary >> read_command_binary) & 3 && read_command_binary >= 2)
 	{
-	//	ft_printf("%llb is command_binary %llb\n", 2, command_binary >> read_command_binary & 3);
 		if (((command_binary >> read_command_binary) & 3) == REG_CODE)
 		{
 			reg = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
@@ -96,15 +94,15 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
 		{
 			if (all_commands[3 - read_command_binary / 2][1] == LABEL_CHAR)
-				(label_list(&(info->label_info), &all_commands[3 - read_command_binary / 2][2], 0, info->write_pos));
+				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][2], 0, info->cmd_begin_pos + info->cmd_size, info->write_pos));
 			else
 			{
 				reg_ind = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
 				if (little_endian)
-					reg_ind = little_endian_to_big(reg_ind, sizeof(int));
-				ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, sizeof(int));
+					reg_ind = little_endian_to_big(reg_ind, (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR);
+				ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR );
 			}
-			info->write_pos += (instruction_nbr < 8) ? T_DIR * 2 : T_DIR;
+			info->write_pos += (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR;
 		}
 		read_command_binary -= 2;
 	}
@@ -137,14 +135,13 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 {
 	int		command_size;
 	int		read_command_binary;
-	char	void_command_check;
 
 	command_size = 0;
 	read_command_binary = 6;
-	void_command_check = 0xff;
 	if ((info->write_pos + COMMAND_INSTRUCTIONS) >= info->to_write_size)
 		malloc_resize_write_size(info);
 	(info->to_write)[info->write_pos] = (char)instruction_nbr;
+	info->cmd_begin_pos = info->write_pos;
 	info->write_pos += 1;
 	if ((char)(command_binary << 2) || instruction_nbr == 16)
 	{
@@ -158,11 +155,12 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 		else if (command_binary >> read_command_binary == IND_CODE)
 			command_size += T_IND;
 		else if (command_binary >> read_command_binary == DIR_CODE)
-			command_size += (instruction_nbr < 8) ? T_DIR * 2 : T_DIR;
+			command_size += (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR;
 		read_command_binary -= 2;
 	}
 	if ((info->write_pos + command_size) > info->to_write_size)
 		malloc_resize_write_size(info);
+	info->cmd_size = command_size;
 }
 
 void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruction instructions)
@@ -272,8 +270,7 @@ int		check_if_label(char *line, t_info *info)
 	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
 	{
 		to_check[ft_strlen(to_check) - 1] = 0;
-		label_list(&(info->label_info), to_check, 1, info->write_pos);
-		// you should here increment write position
+		label_list(&(info->label_info), new_label(to_check, 1, info->write_pos, 0));
 		ft_tabdel((void***)&tmp);
 		return (1);
 	}
@@ -326,12 +323,9 @@ void	read_instructions(t_info *info, t_instruction instructions)
 #include <fcntl.h>
 void	write_file(t_fd fd, t_info *info)
 {
-	ft_printf("-->%s\n", info->file_name);
-	ft_printf("--->%s\n", info->header.prog_name);
 	if (ft_check_little_endianness())
 	info->header.prog_size = little_endian_to_big(info->write_pos - sizeof(info->header), sizeof(int));
-	fd.write = open(info->header.prog_name, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	printf("OPEN FD-> %d\n", fd.write);
+	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
 	if (fd.write == -1)
 		ft_myexit("open error in write_file");
 	ft_memcpy(info->to_write, &info->header, sizeof(info->header));

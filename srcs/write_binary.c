@@ -34,18 +34,10 @@ void	store_name_comment(t_info *info, int which)
 		ft_myexit("malloc error or invalid split");
 	if ((int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
-	//if (which == PROG_NAME_LENGTH)
-		//ft_memset(&(info->header), 0, sizeof(info->header));
 	if (which == PROG_NAME_LENGTH)
-	{
-		ft_memset(&info->header.prog_name, 0, 256);
-		ft_memcpy(info->header.prog_name, split[1], ft_strlen(split[1]));
-	}
-	if (which == COMMENT_LENGTH)
-	{
-		ft_memcpy(which == (PROG_NAME_LENGTH) ?
-				info->header.prog_name : info->header.comment, split[1], ft_strlen(split[1]));
-	}
+		ft_memset(&(info->header), 0, sizeof(info->header));
+	ft_memcpy(which == (PROG_NAME_LENGTH) ?
+			info->header.prog_name : info->header.comment, split[1], ft_strlen(split[1]));
 	ft_tabdel((void***)&split);
 	if (which == PROG_NAME_LENGTH)
 	{
