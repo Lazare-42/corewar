@@ -12,15 +12,16 @@ static t_label	*new_malloced_label(t_label to_store)
 	return (new);
 }
 
-t_label new_label(char *name, int cmd_pos, int write_pos)
+t_label new_label(char *name, int label_pos, int write_pos, int byte_size)
 {
 	t_label new;
 
 	new.name = NULL;
 	if (!(new.name = ft_strdup(name)))
-		ft_myexit("malloc error");
+		ft_myexit("malloc error in new_label");
+	new.byte_size = byte_size;
 	new.next = NULL;
-	new.label_pos = cmd_pos;
+	new.label_pos = label_pos;
 	new.write_pos = write_pos;
 	return (new);
 }
@@ -146,11 +147,25 @@ char	*print_bits(void *ptr, int size)
 	return (result);
 }
 
-void	write_label(t_info *info, int where, short distance)
+void	write_label(t_info *info, int where, short distance, int byte_size)
 {
-	if (ft_check_little_endianness())
-		distance = little_endian_to_big(distance, sizeof(short));
-	ft_memcpy((void*)&info->to_write[where], &distance, sizeof(short));
+	int	distance_int;
+
+	ft_printf("this is byte_size %d\n", byte_size);
+	if (byte_size == sizeof(short))
+	{
+		if (ft_check_little_endianness())
+			distance = little_endian_to_big(distance, sizeof(short));
+		ft_memcpy((void*)&info->to_write[where], &distance, sizeof(short));
+		return ;
+	}
+	else if (byte_size == sizeof(int))
+	{
+		distance_int = distance;
+		if (ft_check_little_endianness())
+			distance_int = little_endian_to_big(distance_int, sizeof(int));
+		ft_memcpy((void*)&info->to_write[where], &distance_int, sizeof(int));
+	}
 }
 
 void	input_labels(t_label_info *label_info, t_info *info)
@@ -167,13 +182,14 @@ void	input_labels(t_label_info *label_info, t_info *info)
 		if ((label_info->label_list)[i].next)
 		{
 			tmp = *(t_label*)((label_info->label_list)[i].next);
-			distance = 1 + pos - tmp.label_pos;
-			write_label(info, tmp.write_pos, distance);
+			distance = pos - tmp.label_pos;
+			ft_printf("%d label marker pos %d tmp.label_pos %d distance\n", pos, tmp.label_pos, distance);
+			write_label(info, tmp.write_pos, distance, tmp.byte_size);
 			while (tmp.next)
 			{
 				tmp = *(t_label*)tmp.next;
-				distance = 1 + pos - tmp.label_pos;
-				write_label(info, tmp.write_pos, distance);
+				distance = pos - tmp.label_pos;
+				write_label(info, tmp.write_pos, distance, tmp.byte_size);
 			}
 		}
 	}

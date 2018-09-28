@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/26 17:02:39 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 13:01:16 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,9 @@ void	store_name_comment(t_info *info, int which)
 	while ((!(ft_strstr(info->file_read[info->file_lines_nbr], ".name")) && which == PROG_NAME_LENGTH)
 		|| (!(ft_strstr(info->file_read[info->file_lines_nbr], ".comment")) && which == COMMENT_LENGTH))
 		info->file_lines_nbr++;
-	if (!(split = (ft_split_char(info->file_read[info->file_lines_nbr], '"'))) || !split[1])
+	if (!(split = (ft_split_char(info->file_read[info->file_lines_nbr], '"'))))
 		ft_myexit("malloc error or invalid split");
-	if ((int)ft_strlen(split[1]) > which)
+	if (split[1] && (int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");
 	if (which == PROG_NAME_LENGTH)
 		ft_memset(&(info->header), 0, sizeof(info->header));

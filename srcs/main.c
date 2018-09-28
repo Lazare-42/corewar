@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/26 17:08:11 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 14:00:52 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
 		{
 			if (all_commands[3 - read_command_binary / 2][1] == LABEL_CHAR)
-				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][2], info->cmd_begin_pos + info->cmd_size - 1, info->write_pos));
+				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][2], info->cmd_begin_pos, info->write_pos, (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR));
 			else
 			{
 				reg_ind = ft_atoi(&all_commands[3 - read_command_binary / 2][1]);
@@ -133,34 +133,32 @@ int		double_separator(char *commands)
 
 void	write_instruction_info(t_info *info, unsigned char command_binary, int instruction_nbr)
 {
-	int		command_size;
+	int		cmd_size;
 	int		read_command_binary;
 
-	command_size = 0;
 	read_command_binary = 6;
-	if ((info->write_pos + COMMAND_INSTRUCTIONS) >= info->to_write_size)
+	info->cmd_begin_pos = info->write_pos;
+	cmd_size = ((char)(command_binary << 2) || instruction_nbr == 16) ? 2 : 1;
+	while (read_command_binary >= 2)
+	{
+		if (command_binary >> read_command_binary == REG_CODE)
+			cmd_size += T_REG;
+		else if (command_binary >> read_command_binary == IND_CODE)
+			cmd_size += T_IND;
+		else if (command_binary >> read_command_binary == DIR_CODE)
+			cmd_size += (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR;
+		read_command_binary -= 2;
+	}
+	if ((info->write_pos + cmd_size) > info->to_write_size)
 		malloc_resize_write_size(info);
 	(info->to_write)[info->write_pos] = (char)instruction_nbr;
-	info->cmd_begin_pos = info->write_pos;
 	info->write_pos += 1;
 	if ((char)(command_binary << 2) || instruction_nbr == 16)
 	{
 		(info->to_write)[info->write_pos] = command_binary;
 		info->write_pos += 1;
 	}
-	while (read_command_binary >= 2)
-	{
-		if (command_binary >> read_command_binary == REG_CODE)
-			command_size += T_REG;
-		else if (command_binary >> read_command_binary == IND_CODE)
-			command_size += T_IND;
-		else if (command_binary >> read_command_binary == DIR_CODE)
-			command_size += (instruction_nbr < 8 || instruction_nbr == 13) ? T_DIR * 2 : T_DIR;
-		read_command_binary -= 2;
-	}
-	if ((info->write_pos + command_size) > info->to_write_size)
-		malloc_resize_write_size(info);
-	info->cmd_size = command_size;
+	info->cmd_size = cmd_size;
 }
 
 void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruction instructions)
@@ -270,7 +268,7 @@ int		check_if_label(char *line, t_info *info)
 	if (to_check[ft_strlen(to_check) - 1] == LABEL_CHAR)
 	{
 		to_check[ft_strlen(to_check) - 1] = 0;
-		label_list(&(info->label_info), new_label(to_check, info->write_pos, 0));
+		label_list(&(info->label_info), new_label(to_check, info->write_pos, 0, 0));
 		ft_tabdel((void***)&tmp);
 		return (1);
 	}

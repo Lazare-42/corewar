@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/25 14:35:04 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 14:00:02 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ typedef struct		s_labels
 	char			*name;
 	int				label_pos;
 	int				write_pos;
+	int				byte_size;
 	void			*next;
 }					t_label;
 
@@ -72,7 +73,7 @@ void		read_file(t_info *info, t_fd fd);
 void		print_label_list(t_label_info *info);
 void		check_label_list(t_label_info *info);
 void		input_labels(t_label_info *label_info, t_info *info);
-t_label 	new_label(char *name, int cmd_pos, int write_pos);
+t_label 	new_label(char *name, int label_pos, int write_pos, int byte_size);
 
 
 
