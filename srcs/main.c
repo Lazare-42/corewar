@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/28 18:19:10 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 22:30:12 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,31 @@ int		check_label(char *label)
 	}
 	return (1);
 }
+
+void	clean_instructions(t_info *info, t_instruction instruction, int i)
+{
+	int		j;
+
+	while (info->file_read[info->file_lines_nbr][i])
+	{
+		j = -1;
+		while (++j < INSTRUCT_NBR)
+		{
+			if (!(ft_memcmp(&info->file_read[info->file_lines_nbr][i], instruction.names[j], ft_strlen(instruction.names[j]))))
+			{
+				if (info->file_read[info->file_lines_nbr][i + ft_strlen(instruction.names[j]) + 1])
+					i += ft_strlen(instruction.names[j]) + 1;
+				else
+					ft_myexit("incomplete instruction");
+				i++;
+				return ;
+			}
+		}
+		i++;
+	}
+}
+
+
 
 char	check_1_command(char *command, char match)
 {
@@ -94,7 +119,8 @@ void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruct
 	command_size = 0;
 	command_binary = 0;
 	all_commands = NULL;
-	if (double_separator(commands) || !(all_commands = ft_split_char(commands, SEPARATOR_CHAR)))
+	ft_printf("%sis commands\n", commands);
+	if (!(all_commands = ft_split_char(commands, SEPARATOR_CHAR)))
 		ft_myexit("ft_split failed. Use only one SEPARATOR_CHAR to distinguish instructions");
 	while (all_commands[(int)command_size])
 		command_size++;
@@ -106,56 +132,6 @@ void	check_instruction_arguments(t_info *info, char *commands, int i, t_instruct
 	write_instruction_info(info, command_binary, i + 1);
 	write_instruction(info, command_binary, all_commands, i + 1);
 	ft_tabdel((void***)&all_commands);
-}
-
-char	*delete_redudant_char(char *line, int i)
-{
-	int j;
-
-	i++;
-	while (line[i])
-	{
-		j = i - 1;
-		line[j] = line[i];
-		i++;
-	}
-	line[j + 1] = 0;
-	return (line);
-}
-
-char	*check_white_space_redudancy(char *line, int from)
-{
-	while (line[from])
-	{
-		while (from > 0 && line[from + 1] && line[from] == ' ') 
-			line = delete_redudant_char(line, from);
-		from++;
-	}
-	return (line);
-}
-
-void	clean_instructions(t_info *info, t_instruction instruction, int i)
-{
-	int		j;
-
-	while (info->file_read[info->file_lines_nbr][i])
-	{
-		j = -1;
-		while (++j < INSTRUCT_NBR)
-		{
-			if (!(ft_memcmp(&info->file_read[info->file_lines_nbr][i], instruction.names[j], ft_strlen(instruction.names[j]))))
-			{
-				if (info->file_read[info->file_lines_nbr][i + ft_strlen(instruction.names[j]) + 1])
-					i += ft_strlen(instruction.names[j]) + 1;
-				else
-					ft_myexit("incomplete instruction");
-				i++;
-				info->file_read[info->file_lines_nbr] = check_white_space_redudancy(info->file_read[info->file_lines_nbr], i);
-				return ;
-			}
-		}
-		i++;
-	}
 }
 
 void	cut_comment(char **line)
@@ -193,6 +169,15 @@ int		check_if_label(char *line, t_info *info)
 	return (0);
 }
 
+void	check_label_presence(t_info *info)
+{
+	char	*label_pos;
+
+	label_pos = NULL;
+	if (!(label_pos = ft_strchr(info->file_read[info->file_lines_nbr], ':')))
+		return ;
+}
+
 void	check_instructions(t_info *info, t_instruction instructions)
 {
 	char	**instruct_split;
@@ -223,12 +208,59 @@ void	check_instructions(t_info *info, t_instruction instructions)
 	ft_tabdel((void***)&instruct_split);
 }
 
+char	*delete_redudant_char(char *line, int i)
+{
+	int j;
+
+	i++;
+	while (line[i])
+	{
+		j = i - 1;
+		line[j] = line[i];
+		i++;
+	}
+	line[j + 1] = 0;
+	return (line);
+}
+
+char	*check_white_space_redudancy(char *line)
+{
+	int i;
+	int token;	
+
+	i = 0;
+	token = 0;
+	while (line[i])
+	{
+		while (line[i] && line[i] < 33) 
+			line = delete_redudant_char(line, i);
+		if (line[i] && line[i] == ',' && i - 1 > 0)
+		{
+			line = delete_redudant_char(line, i - 1);
+			token = 1;
+		}
+		while (line[i] && line[i] >= 33)
+		{
+			token = 0;
+			if (line[i] == ',')
+				token = 1;
+			i++;
+		}
+		if (line[i] && !token)
+			i++;
+	}
+	return (line);
+}
+
 void	read_instructions(t_info *info, t_instruction instructions)
 {
 	info->file_lines_nbr++;
 	while (info->file_read[info->file_lines_nbr])
 	{
 		cut_comment(&(info->file_read[info->file_lines_nbr]));
+		ft_printf("%s\n%n", info->file_read[info->file_lines_nbr]);
+		check_white_space_redudancy(info->file_read[info->file_lines_nbr]);
+		ft_printf("%s\n%n", info->file_read[info->file_lines_nbr]);
 		if (info->file_read[info->file_lines_nbr][0])
 				check_instructions(info, instructions);
 		info->file_lines_nbr++;
