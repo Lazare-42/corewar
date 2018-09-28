@@ -119,35 +119,6 @@ void	check_label_list(t_label_info *info)
 	}
 }
 
-char	*print_bits(void *ptr, int size)
-{
-	int		i;
-	int		bit_nbr;
-	char	*result;
-	char	*test;
-	int		j;
-
-	i = 7;
-	j = 0;
-	bit_nbr = 0;
-	test = ptr;
-	if (!(result = ft_strnew(size * 10)))
-		return (NULL);
-	while (j < size)
-	{
-		result[bit_nbr] = (test[j] & (1 << i)) ? '1' : '0';
-		bit_nbr++;
-		(i == 4) ? result[bit_nbr] = ' ' : 0;
-		(i == 4) ? bit_nbr++ : 0;
-		(i == 0) ? result[bit_nbr] = ' ' : 0;
-		(i == 0) ? j++ : 0;
-		(i == 0) ? bit_nbr++ : 0;
-		(i == 0) ? i = 8 : 0;
-		i--;
-	}
-	return (result);
-}
-
 void	write_label(t_info *info, int where, short distance, int byte_size)
 {
 	int	distance_int;

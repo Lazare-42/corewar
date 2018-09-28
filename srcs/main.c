@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/28 14:52:12 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 15:08:15 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ void	malloc_resize_write_size(t_info *info)
 
 char	check_1_command(char *command, char match)
 {
-	// you should return a function to check DIRECT_CHAR / LABEL_CHAR / etc
 	if (match & T_DIR)
 	{
 		if ((command[0] == DIRECT_CHAR && command[1]) && ((command[1] == LABEL_CHAR) || ft_isdigit(command[1]) || (command[1] == '-' && ft_isdigit(command[2])))) 
@@ -90,6 +89,8 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 					indirection = little_endian_to_big(indirection, sizeof(short));
 				ft_memcpy((void*)&info->to_write[info->write_pos], &indirection, (T_IND / 2));
 			}
+			else
+				label_list(&(info->label_info), new_label(&all_commands[3 - read_command_binary / 2][1], info->cmd_begin_pos, info->write_pos, T_IND / 2));
 			info->write_pos += T_IND / 2;
 		}
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)

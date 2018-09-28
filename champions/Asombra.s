@@ -14,6 +14,7 @@ st r1, 11
 st r16, -4
 shield:
 live %0
+ld :shield, r8
 st r16, -300
 st r2, -301
 st r2, -302

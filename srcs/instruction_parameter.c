@@ -5,8 +5,8 @@ t_instruction	set_instructions_argument_types(t_instruction instructions)
 {
 	instructions.instruct_arg[0][1] = T_DIR;
 
-	instructions.instruct_arg[1][1] = T_DIR;
-	instructions.instruct_arg[1][2] = T_IND | T_REG;
+	instructions.instruct_arg[1][1] = T_DIR | T_IND;
+	instructions.instruct_arg[1][2] = T_REG;
 
 	instructions.instruct_arg[2][1] = T_REG;
 	instructions.instruct_arg[2][2] = T_IND | T_REG;
