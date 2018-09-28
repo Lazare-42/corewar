@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/12/18 15:27:37 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 15:40:21 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 17:05:23 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,6 +167,7 @@ int					ft_isdigit(int c);
 int					ft_isalnum(int c);
 int					ft_isascii(int c);
 int					ft_isprint(int c);
+int					ft_isnumber(char *to_check);
 int					ft_toupper(int c);
 int					ft_tolower(int c);
 int					ft_str_isalpha(char *str);

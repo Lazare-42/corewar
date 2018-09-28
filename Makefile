@@ -4,6 +4,7 @@ SOURCES =	main.c \
 			instruction_parameter.c \
 			read_file.c \
 			label_management.c \
+			store_name_comment.c \
 			write_binary.c \
 
 LIBDIR = libft

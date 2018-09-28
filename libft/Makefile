@@ -28,6 +28,7 @@ SRCS =			ft_advance_for_quotes.c \
       			ft_isascii.c \
       			ft_isdigit.c \
       			ft_isprint.c \
+				ft_isnumber.c \
       			ft_itoa.c \
       			ft_joinfree_heapstr_stackstr.c \
       			ft_joinfree_stackstr_heapstr.c \

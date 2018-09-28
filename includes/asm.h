@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/28 14:58:22 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 16:21:11 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,4 +74,8 @@ void		print_label_list(t_label_info *info);
 void		check_label_list(t_label_info *info);
 void		input_labels(t_label_info *label_info, t_info *info);
 t_label 	new_label(char *name, int label_pos, int write_pos, int byte_size);
+void		write_instruction(t_info *info, unsigned char command_binary, char **all_commands, int instruction_nbr);
+void		write_instruction_info(t_info *info, unsigned char command_binary, int instruction_nbr);
+void		malloc_resize_write_size(t_info *info);
+void		write_file(t_fd fd, t_info *info);
 #endif
