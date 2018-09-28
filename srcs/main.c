@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/28 14:00:52 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/28 14:52:12 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,8 +88,9 @@ void	write_instruction(t_info *info, unsigned char command_binary, char **all_co
 				indirection = ft_atoi(&all_commands[3 - read_command_binary / 2][0]);
 				if (little_endian)
 					indirection = little_endian_to_big(indirection, sizeof(short));
+				ft_memcpy((void*)&info->to_write[info->write_pos], &indirection, (T_IND / 2));
 			}
-			info->write_pos += T_IND;
+			info->write_pos += T_IND / 2;
 		}
 		else if (((command_binary >> read_command_binary) & 3) == DIR_CODE)
 		{

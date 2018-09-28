@@ -67,6 +67,7 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 	write_pos = to_swap->write_pos;
 	to_swap->write_pos = (info->label_list)[i].write_pos;
 	to_swap->label_pos = (info->label_list)[i].label_pos;
+	to_swap->byte_size = (info->label_list)[i].byte_size;
 	(info->label_list)[i].write_pos = write_pos;
 	(info->label_list)[i].label_pos = label_pos;
 }
@@ -151,7 +152,6 @@ void	write_label(t_info *info, int where, short distance, int byte_size)
 {
 	int	distance_int;
 
-	ft_printf("this is byte_size %d\n", byte_size);
 	if (byte_size == sizeof(short))
 	{
 		if (ft_check_little_endianness())
@@ -171,26 +171,20 @@ void	write_label(t_info *info, int where, short distance, int byte_size)
 void	input_labels(t_label_info *label_info, t_info *info)
 {
 	int		i;
-	t_label	tmp;
+	t_label	*tmp;
 	int		pos;
 	short	distance;
 
 	i = -1;
 	while (++i < label_info->n)
 	{
-		pos = (label_info->label_list)[i].label_pos;
-		if ((label_info->label_list)[i].next)
+		pos = label_info->label_list[i].label_pos;
+		tmp = label_info->label_list[i].next;
+		while (tmp)
 		{
-			tmp = *(t_label*)((label_info->label_list)[i].next);
-			distance = pos - tmp.label_pos;
-			ft_printf("%d label marker pos %d tmp.label_pos %d distance\n", pos, tmp.label_pos, distance);
-			write_label(info, tmp.write_pos, distance, tmp.byte_size);
-			while (tmp.next)
-			{
-				tmp = *(t_label*)tmp.next;
-				distance = pos - tmp.label_pos;
-				write_label(info, tmp.write_pos, distance, tmp.byte_size);
-			}
+			distance = pos - tmp->label_pos;
+			write_label(info, tmp->write_pos, distance, tmp->byte_size);
+			tmp = tmp->next;
 		}
 	}
 }
