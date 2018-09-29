@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/28 16:21:11 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/09/29 19:30:02 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,8 @@
 #include "./op.h"
 
 #define INSTRUCT_NBR			16
-#define FILE_INITIAL_SIZE		256 
 #define LABEL_INITIAL_NBR		1
+#define INITIAL_READ_LINE_SZ	128
 #define INITIAL_WRITE_SIZE		4096
 #define HEADER_SIZE				0x890
 #define INITIAL_WRITE_POS		PROG_NAME_LENGTH + COMMENT_LENGTH
@@ -51,10 +51,19 @@ typedef struct		s_label_info
 	t_label			*label_list;
 }					t_label_info;
 
+typedef struct		s_line
+{
+	char			*line;
+	int				nbr;
+	int				tokens[4][3];
+}					t_line;
+
 typedef struct		s_info
 {
-	char			**file_read;
-	int				file_lines_nbr;
+	t_line			*line_tokens;
+	int				line_nbr;
+	int				line_info_size;
+
 	char			file_name[256];
 	t_label_info	label_info;
 	t_header		header;

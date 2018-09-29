@@ -14,31 +14,47 @@ void	set_name_open_fd(t_info *info, t_fd *fd, char *to_open)
 		ft_myexit("Open error");
 }
 
-static char	**file_lines(int nbr, char	**file_lines)
+void	cut_comment(char **line)
 {
-	char	**new;
-	int		i;
+	int i;
 
-	new = NULL;
 	i = 0;
-	if (!(new = malloc(sizeof(char *) * nbr)))
-		ft_myexit("malloc error in file_lines");
-	while (i < nbr)
+	while ((*line)[i])
 	{
-		new[i] = NULL;
+		if ((*line)[i] == '#')
+		{
+			(*line)[i] = 0;
+			break ;
+		}
 		i++;
 	}
-	if (file_lines)
+}
+
+void malloc_resize_line_tokens(t_info *info)
+{
+	int copy;
+	t_line *new_line_tokens;
+
+	new_line_tokens = NULL;
+	copy = 0;
+	if (info->line_info_size != INITIAL_READ_LINE_SZ)
 	{
-		i = 0;
-		while (i < nbr / 2)
-		{
-			new[i] = file_lines[i];
-			i++;
-		}
-		ft_tabdel((void***)&file_lines);
+		copy = 1;
+		info->line_info_size *= 2;
 	}
-	return (file_lines = new);
+	if (!(new_line_tokens = malloc(sizeof(t_line) * info->line_info_size)))
+		ft_myexit("error in malloc_resize_line_tokens");
+	if (copy)
+	{
+		copy = 0;
+		while (copy < info->line_info_size / 2)
+		{
+			new_line_tokens[copy] = info->line_tokens[copy];
+			copy++;
+		}
+		ft_memdel((void**)&(info->line_tokens));
+	}
+	info->line_tokens = new_line_tokens;
 }
 
 void	read_file(t_info *info, t_fd fd)
@@ -48,17 +64,18 @@ void	read_file(t_info *info, t_fd fd)
 	int		i;
 
 	i = 0;
-	info->file_read = NULL;
-	info->file_lines_nbr = FILE_INITIAL_SIZE;
-	info->file_read = file_lines(FILE_INITIAL_SIZE, info->file_read);
+	info->line_info_size = INITIAL_READ_LINE_SZ;
+	info->line_nbr = 0;
+	info->line_tokens = NULL;
+	malloc_resize_line_tokens(info);
 	while ((gnl_ret = get_next_line(fd.read, &buf, '\n')) > 0)
 	{
-		if (i >= info->file_lines_nbr)
-		{
-			info->file_lines_nbr *= 2;
-			info->file_read = file_lines(info->file_lines_nbr, info->file_read);
-		}
-		(info->file_read)[i] = buf;
+		if (i >= info->line_info_size)
+			malloc_resize_line_tokens(info);
+		cut_comment(&buf);
+		info->line_tokens[i].line = buf;
+		info->line_tokens[i].nbr = i;
+		info->line_nbr = i;
 		i++;
 	}
 	if (gnl_ret < 0)
