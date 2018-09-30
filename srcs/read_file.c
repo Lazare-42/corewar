@@ -32,27 +32,28 @@ void	cut_comment(char **line)
 
 void malloc_resize_line_tokens(t_info *info)
 {
-	int copy;
 	t_line *new_line_tokens;
+	int		i;
 
 	new_line_tokens = NULL;
-	copy = 0;
 	if (info->line_tokens)
-	{
-		copy = 1;
 		info->line_info_size *= 2;
-	}
 	if (!(new_line_tokens = malloc(sizeof(t_line) * info->line_info_size)))
 		ft_myexit("error in malloc_resize_line_tokens");
-	if (copy)
+	i = 0;
+	if (info->line_tokens)
 	{
-		copy = 0;
-		while (copy < info->line_info_size / 2)
+		while (i < info->line_info_size / 2)
 		{
-			new_line_tokens[copy] = info->line_tokens[copy];
-			copy++;
+			new_line_tokens[i] = info->line_tokens[i];
+			i++;
 		}
 		ft_memdel((void**)&(info->line_tokens));
+	}
+	while (i < info->line_info_size)
+	{
+		new_line_tokens[i].line = NULL;
+		i++;
 	}
 	info->line_tokens = new_line_tokens;
 }

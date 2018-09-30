@@ -27,7 +27,7 @@ OBJS = $(addprefix $(ODIR)/, $(SOURCES:.c=.o))
 
 OK = echo "[32m OK ✓ [0m"
 
-all: lib mkbin $(NAME) ./includes/asm.h ./Makefile
+all: lib mkbin $(NAME)
 
 lib:
 	@make -C $(LIBDIR)

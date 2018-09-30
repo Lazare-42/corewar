@@ -47,4 +47,6 @@ void	store_name_comment(t_info *info, int which)
 		input_magic(info);
 		store_name_comment(info, COMMENT_LENGTH); 
 	}
+	else
+		info->line_nbr++;
 }

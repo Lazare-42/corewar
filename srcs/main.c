@@ -61,28 +61,6 @@ char	check_1_command(char *command, char match)
 	return (0);
 }
 
-int		double_separator(char *commands)
-{
-	int	i;
-	int	ret;
-
-	ret = 0;
-	i = 0;
-	while (commands[i])
-	{
-		if (commands[i] == SEPARATOR_CHAR)
-		{
-			if (ret)
-				return (ret);
-			ret = 1;
-		}
-		else if (commands[i] > 33)
-			ret = 0;
-		i++;
-	}
-	return (ret);
-}
-
 int		g_initial_parser[4][3][2] = {
 	{{1, 0}, {0, 1}, {3, 0}}, 
 	{{1, 1}, {0, 1}, {2, 1}}, 
@@ -117,15 +95,19 @@ void	lexe_one_token(t_line *token)
 
 	int start;
 
-	start = 1;
 	i = 0;
-	current_state = 0;
-	while (current_state || start) // && 
+	while (token->line[i])
 	{
-		end_state = current_state;
-		current_state = g_initial_parser[end_state][g_alpha[(int)token->line[i]]][0];
-		i += g_initial_parser[end_state][g_alpha[(int)token->line[i]]][1];
-		start = 0;
+		start = 1;
+		current_state = 0;
+		while (current_state || start) // && 
+		{
+			end_state = current_state;
+			current_state = g_initial_parser[end_state][g_alpha[(int)token->line[i]]][0];
+			i += g_initial_parser[end_state][g_alpha[(int)token->line[i]]][1];
+			start = 0;
+		}
+		// save token
 	}
 	// sauvegarder le i quand je rentre a 0 pour savoir a quelle position je commence et sauvegarder les longeurs
 	// et en fonction end_state je connaitrai le type
@@ -133,15 +115,12 @@ void	lexe_one_token(t_line *token)
 
 void	read_instructions(t_info *info, t_instruction instructions)
 {
-	int i;
-
-	i = 0;
 	(void)instructions;
 	(void)info;
-	while (i < info->line_nbr)
+	while (info->line_tokens[info->line_nbr].line)
 	{
-		lexe_one_token(&(info->line_tokens[i]));
-		i++;
+		lexe_one_token(&(info->line_tokens[info->line_nbr]));
+		info->line_nbr++;
 	}
 }
 
