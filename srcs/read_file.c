@@ -37,7 +37,7 @@ void malloc_resize_line_tokens(t_info *info)
 
 	new_line_tokens = NULL;
 	copy = 0;
-	if (info->line_info_size != INITIAL_READ_LINE_SZ)
+	if (info->line_tokens)
 	{
 		copy = 1;
 		info->line_info_size *= 2;
@@ -70,12 +70,11 @@ void	read_file(t_info *info, t_fd fd)
 	malloc_resize_line_tokens(info);
 	while ((gnl_ret = get_next_line(fd.read, &buf, '\n')) > 0)
 	{
-		if (i >= info->line_info_size)
+		if (i == info->line_info_size)
 			malloc_resize_line_tokens(info);
 		cut_comment(&buf);
 		info->line_tokens[i].line = buf;
 		info->line_tokens[i].nbr = i;
-		info->line_nbr = i;
 		i++;
 	}
 	if (gnl_ret < 0)

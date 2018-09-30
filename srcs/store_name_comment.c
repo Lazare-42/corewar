@@ -27,12 +27,12 @@ void	store_name_comment(t_info *info, int which)
 	char	**split;
 
 	split = NULL;
-	while ((!(ft_strstr(info->file_read[info->file_lines_nbr],
+	while ((!(ft_strstr(info->line_tokens[info->line_nbr].line,
 						".name")) && which == PROG_NAME_LENGTH)
-		|| (!(ft_strstr(info->file_read[info->file_lines_nbr],
+		|| (!(ft_strstr(info->line_tokens[info->line_nbr].line,
 					".comment")) && which == COMMENT_LENGTH))
-		info->file_lines_nbr++;
-	if (!(split = (ft_split_char(info->file_read[info->file_lines_nbr], '"'))))
+		info->line_nbr++;
+	if (!(split = (ft_split_char(info->line_tokens[info->line_nbr].line, '"'))))
 		ft_myexit("malloc error or invalid split");
 	if (split[1] && (int)ft_strlen(split[1]) > which)
 		ft_myexit("Your champion's name or your comment is too long");

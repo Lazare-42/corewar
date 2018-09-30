@@ -164,6 +164,7 @@ int		main(int ac, char **av)
 	malloc_resize_write_size(&info);
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
+
 	set_name_open_fd(&info, &fd, av[1]);
 	read_file(&info, fd);
 
