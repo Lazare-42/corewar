@@ -17,9 +17,10 @@
 
 #define INSTRUCT_NBR			16
 #define LABEL_INITIAL_NBR		1
-#define INITIAL_READ_LINE_SZ	128
+#define INITIAL_FILE_SIZE		128
 #define INITIAL_WRITE_SIZE		4096
 #define HEADER_SIZE				0x890
+#define DEBUG					1				
 #define INITIAL_WRITE_POS		PROG_NAME_LENGTH + COMMENT_LENGTH
 #define COMMAND_INSTRUCTIONS	2 			
 
@@ -51,18 +52,20 @@ typedef struct		s_label_info
 	t_label			*label_list;
 }					t_label_info;
 
-typedef struct		s_line
+typedef struct		s_token
 {
-	char			*line;
-	int				nbr;
-	int				tokens[4][3];
-}					t_line;
+	unsigned int	token[4][8];
+	unsigned int	line_nbr;
+}					t_token;
 
 typedef struct		s_info
 {
-	t_line			*line_tokens;
-	int				line_nbr;
-	int				line_info_size;
+	char			*file;
+	unsigned int	read_pos;
+
+	t_token			*tokens;
+	unsigned int	token_struct_size;
+	unsigned int	token_nbr;
 
 	char			file_name[256];
 	t_label_info	label_info;

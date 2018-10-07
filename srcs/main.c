@@ -14,11 +14,6 @@
 #include "../includes/asm.h"
 #include <unistd.h>
 
-void output_comment(int fd_read)
-{
-	(void)fd_read;
-}
-
 int		check_label(char *label)
 {
 	int i;
@@ -61,68 +56,110 @@ char	check_1_command(char *command, char match)
 	return (0);
 }
 
-int		g_initial_parser[4][3][2] = {
-	{{1, 0}, {0, 1}, {3, 0}}, 
-	{{1, 1}, {0, 1}, {2, 1}}, 
-	{{3, 0}, {0, 1}, {3, 0}}, 
-	{{0, 0}, {0, 0}, {0, 0}}
+static int		g_initial_parser[8][8][2] = {
+							//	 0		 1		 2		 3		 4		 5		 6		 7 
+							//   0		 ?		 AN		 WP		 ,		 :		 %		 \n
+	
+/* 0. End State				*/	{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 
+                                                                                               
+/* 1. Default				*/	{{0, 0}, {7, 0}, {2, 0}, {1, 1}, {7, 0}, {7, 0}, {7, 0}, {1, 1}}, 
+                                                                                               
+/* 2. Function				*/	{{7, 0}, {7, 0}, {2, 1}, {4, 0}, {7, 0}, {3, 1}, {7, 0}, {7, 0}}, 
+                                                                                               
+/* 3. Label					*/	{{1, 0}, {7, 0}, {7, 0}, {1, 0}, {7, 0}, {7, 0}, {7, 0}, {1, 0}}, 
+                                                                                               
+/* 4. Argument Input wait	*/	{{1, 0}, {7, 0}, {5, 0}, {4, 1}, {7, 0}, {7, 0}, {5, 0}, {1, 0}}, 
+                                                                                               
+/* 5. Argument Input		*/	{{1, 0}, {7, 0}, {5, 1}, {6, 0}, {4, 1}, {5, 1}, {5, 1}, {1, 0}}, 
+                                                                                               
+/* 6. WP after Arg			*/	{{1, 0}, {7, 0}, {7, 0}, {6, 1}, {4, 1}, {7, 0}, {7, 0}, {1, 0}}, 
+                                                                                               
+/* 7. Error					*/	{{1, 0}, {7, 1}, {7, 1}, {1, 0}, {7, 1}, {7, 1}, {7, 1}, {1, 0}}, 
+
 };
 
-int    g_alpha[128] = {
+
+static int    g_alpha[128] = {
 	0,
-	0, 0, 0, 0, 0, 0, 0, 0, 1, 3,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 2, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0
+	1, 1, 1, 1, 1, 1, 1, 1, 3, 7,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 3, 1, 1, 1, 1, 6, 1, 1, 1,
+	1, 1, 1, 4, 2, 1, 1, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 5, 1, 1,
+	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 1, 1, 1, 1, 1
 };
 
-
-void	lexe_one_token(t_line *token)
+void	save_tokens(char *line, int *command_start, int i, int begin_state, int end_state)
 {
-	int i;
+	int tmp;
 
-	int current_state;
-	int end_state;
-
-	int start;
-
-	i = 0;
-	while (token->line[i])
+	tmp = *command_start;
+	while (tmp < i)
 	{
-		start = 1;
-		current_state = 0;
-		while (current_state || start) // && 
-		{
-			end_state = current_state;
-			current_state = g_initial_parser[end_state][g_alpha[(int)token->line[i]]][0];
-			i += g_initial_parser[end_state][g_alpha[(int)token->line[i]]][1];
-			start = 0;
-		}
-		// save token
+		ft_printf("[[yellow]]");
+		ft_putchar((int)line[tmp]);
+		tmp++;
+		ft_printf("[[end]]");
 	}
-	// sauvegarder le i quand je rentre a 0 pour savoir a quelle position je commence et sauvegarder les longeurs
-	// et en fonction end_state je connaitrai le type
+	if (begin_state == 7)
+		ft_printf("[[red]]error%d", begin_state);
+	if (end_state == 7)
+		ft_printf("[[red]] error %d[[end]]", end_state);
+	if (begin_state == 2 && end_state == 4)
+	{
+		*command_start = i;
+		ft_printf("[[green]] command[[end]]\n");
+	}
+	if (begin_state == 2 && end_state == 3)
+	{
+		*command_start = i;
+		ft_printf("[[green]] label[[end]]\n");
+	}
+	if (begin_state == 5 && (end_state == 1 || end_state == 4 || end_state == 5))
+	{
+		*command_start = i;
+		ft_printf("[[green]] arg[[end]]\n");
+	}
+	*command_start = i;
 }
+
+void	lexe_one_token(int i, char *line)
+{
+	int begin_state;
+	int end_state;
+	int command_start;
+
+	end_state = 1;
+	begin_state = 1;
+	command_start = i;
+	while (begin_state)
+	{
+		begin_state = end_state;
+		end_state = g_initial_parser[begin_state][g_alpha[(int)line[i]]][0];
+		if (begin_state != end_state)
+			save_tokens(line, &command_start, i, begin_state, end_state);
+		i += g_initial_parser[begin_state][g_alpha[(int)line[i]]][1];
+		if (end_state == 1)
+			command_start = i;
+	}
+}
+
+
 
 void	read_instructions(t_info *info, t_instruction instructions)
 {
 	(void)instructions;
 	(void)info;
-	while (info->line_tokens[info->line_nbr].line)
-	{
-		lexe_one_token(&(info->line_tokens[info->line_nbr]));
-		info->line_nbr++;
-	}
+	lexe_one_token(info->read_pos, info->file);
 }
+
 
 // check at the beginning if integers are of size 4 (always the case)
 int		main(int ac, char **av)
@@ -146,9 +183,12 @@ int		main(int ac, char **av)
 
 	set_name_open_fd(&info, &fd, av[1]);
 	read_file(&info, fd);
+	info.read_pos = 0;
 
 	store_name_comment(&info, PROG_NAME_LENGTH);
+//	ft_printf("%s\n", &info.file[info.read_pos]);
 	read_instructions(&info, instructions);
+//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
 	/*
 	check_label_list(&(info.label_info));
 	input_labels(&(info.label_info), &info);

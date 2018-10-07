@@ -13,7 +13,7 @@
 #include "../libft/includes/libft.h"
 #include "../includes/asm.h"
 
-void	input_magic(t_info *info)
+static void	input_magic(t_info *info)
 {
 	info->header.magic = COREWAR_EXEC_MAGIC;
 	if (ft_check_little_endianness())
@@ -22,31 +22,50 @@ void	input_magic(t_info *info)
 		info->header.magic = COREWAR_EXEC_MAGIC;
 }
 
-void	store_name_comment(t_info *info, int which)
+static void	store_name_comment_2(t_info *info, int which, int quotes_end)
 {
-	char	**split;
-
-	split = NULL;
-	while ((!(ft_strstr(info->line_tokens[info->line_nbr].line,
-						".name")) && which == PROG_NAME_LENGTH)
-		|| (!(ft_strstr(info->line_tokens[info->line_nbr].line,
-					".comment")) && which == COMMENT_LENGTH))
-		info->line_nbr++;
-	if (!(split = (ft_split_char(info->line_tokens[info->line_nbr].line, '"'))))
-		ft_myexit("malloc error or invalid split");
-	if (split[1] && (int)ft_strlen(split[1]) > which)
+	if (!(ft_is_white_space_line(&info->file[info->read_pos] + 2 + quotes_end)))
+		ft_myexit("Dangling characters\
+ after quotes in line defining name or comment.");
+	if (quotes_end > which)
 		ft_myexit("Your champion's name or your comment is too long");
 	if (which == PROG_NAME_LENGTH)
 		ft_memset(&(info->header), 0, sizeof(info->header));
 	ft_memcpy(which == (PROG_NAME_LENGTH) ?
 	info->header.prog_name :
-	info->header.comment, split[1], ft_strlen(split[1]));
-	ft_tabdel((void***)&split);
+	info->header.comment, &info->file[info->read_pos] + 1, quotes_end);
+	info->read_pos = ft_strchr(&info->file[info->read_pos], '\n') - info->file;
 	if (which == PROG_NAME_LENGTH)
 	{
 		input_magic(info);
 		store_name_comment(info, COMMENT_LENGTH); 
 	}
-	else
-		info->line_nbr++;
+}
+
+void	store_name_comment(t_info *info, int which)
+{
+	int		quotes_end;
+
+	if (!(ft_strchr(&info->file[(int)info->read_pos], '.')))
+		ft_myexit("File must begin by a . for name and comment lines");
+	info->read_pos = (unsigned int)
+				(ft_strchr(&info->file[(int)info->read_pos], '.') - info->file);
+	if (ft_memcmp(&info->file[info->read_pos], which == PROG_NAME_LENGTH ?
+		".name" : ".comment",
+		ft_strlen(which == PROG_NAME_LENGTH ? ".name" : ".comment")))
+		ft_myexit("Your name or comment line must start by .name or .comment");
+	if (NULL == ft_strnchr(&info->file[info->read_pos], '"',
+	ft_strchr(&info->file[info->read_pos], '\n') - &info->file[info->read_pos]))
+		ft_myexit("No quotes after .name or .comment");
+	info->read_pos = ft_strnchr(&info->file[info->read_pos], '"',
+	ft_strchr(&info->file[info->read_pos], '\n') - &info->file[info->read_pos])
+		- info->file;
+	if (NULL == ft_strnchr(&info->file[info->read_pos] + 1, '"',
+		ft_strchr(&info->file[info->read_pos], '\n')
+		- (&info->file[info->read_pos] + 1)))
+		ft_myexit("Dangling quotes after .name or .comment");
+	quotes_end = ft_strnchr(&info->file[info->read_pos] + 1, '"',
+	ft_strchr(&info->file[info->read_pos], '\n') -
+	(&info->file[info->read_pos] + 1)) - &info->file[(int)info->read_pos] - 1;
+	store_name_comment_2(info, which, quotes_end);
 }

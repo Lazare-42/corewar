@@ -1,8 +1,8 @@
-.name "Little Puppy"
+.name "lol"				 
 .comment "Wang Wang!!!!"
 
 ld		%0, r3
-live	%42
+coucou: live	%42
 sti		r15, %0, r14
 live	%42
 sti		r15, %0, r14

@@ -72,6 +72,7 @@ SRCS =			ft_advance_for_quotes.c \
 				ft_str_mins_to_caps.c \
       			ft_strcat.c \
       			ft_strchr.c \
+				ft_strnchr.c \
       			ft_strclr.c \
       			ft_strcmp.c \
       			ft_strcpy.c \
@@ -145,6 +146,7 @@ SRCS =			ft_advance_for_quotes.c \
 				bonus_colors_formatting.c \
 				ft_decompose_color.c \
 				get_next_line.c \
+				ft_iswhite_space_line.c \
 
 # CC = gcc -Wall -Wextra -Werror -c -g
 

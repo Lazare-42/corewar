@@ -147,6 +147,7 @@ size_t				ft_strlen(const char *str);
 char				*ft_strcpy(char *dest, char *src);
 char				*ft_strncat(char *dest, char *src, int nb);
 char				*ft_strchr(const char *s, int c);
+char				*ft_strnchr(const char *s, int c, unsigned int size);
 char				*ft_strrchr(const char *s, int c);
 char				*ft_strnstr(const char *haystack, \
 		const char *needle, size_t n);
@@ -247,4 +248,5 @@ void				find_arg_len(va_list ap, t_printf *argument_specs);
 void				parsing_handler(const char *format,
 		va_list ap, t_str *argument_str);
 int					ft_dprintf(int fd, const char *restrict format, ...);
+int					ft_is_white_space_line(char *line);
 #endif

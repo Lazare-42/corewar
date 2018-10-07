@@ -1,5 +1,6 @@
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
+#include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
 
@@ -29,7 +30,7 @@ void	cut_comment(char **line)
 		i++;
 	}
 }
-
+/*
 void malloc_resize_line_tokens(t_info *info)
 {
 	t_line *new_line_tokens;
@@ -57,27 +58,53 @@ void malloc_resize_line_tokens(t_info *info)
 	}
 	info->line_tokens = new_line_tokens;
 }
+*/
+
+void	malloc_file_line(char **to_cpy, unsigned int *size)
+{
+	char	*new;
+
+	new = NULL;
+	if ((*to_cpy))
+		*size *= 2;
+	else
+		*size = INITIAL_FILE_SIZE;
+	if (!(new = malloc(sizeof(char) * *size)))
+		ft_myexit("malloc error in malloc_file_line");
+	ft_memset(new, 0, *size);
+	if ((*to_cpy))
+	{
+		ft_memcpy(new, *to_cpy, *size / 2);
+		ft_memdel((void**)to_cpy);
+	}
+	*to_cpy = new;
+}
 
 void	read_file(t_info *info, t_fd fd)
 {
-	int		gnl_ret;
-	char	*buf;
-	int		i;
+	char				buf;
+	unsigned char		comment_mode;
+	unsigned int		read_size;
+	unsigned int		malloc_size;
+	int					read_ret;
 
-	i = 0;
-	info->line_info_size = INITIAL_READ_LINE_SZ;
-	info->line_nbr = 0;
-	info->line_tokens = NULL;
-	malloc_resize_line_tokens(info);
-	while ((gnl_ret = get_next_line(fd.read, &buf, '\n')) > 0)
+	info->file = NULL;
+	read_size = 0;
+	comment_mode = 0;
+	while ((read_ret = read(fd.read, &buf, 1)) > 0)
 	{
-		if (i == info->line_info_size)
-			malloc_resize_line_tokens(info);
-		cut_comment(&buf);
-		info->line_tokens[i].line = buf;
-		info->line_tokens[i].nbr = i;
-		i++;
+		if (read_size == malloc_size || !(info->file))
+			malloc_file_line(&(info->file), &malloc_size);
+		if (buf == '#')
+			comment_mode = 1;
+		if (comment_mode && buf == '\n')
+			comment_mode = 0;
+		if (0 == comment_mode)
+		{
+			info->file[read_size] = buf;
+			read_size++;
+		}
 	}
-	if (gnl_ret < 0)
-		ft_myexit("get_next_line error");
+	if (read_ret < 0)
+		ft_myexit("read error in function read_file");
 }
