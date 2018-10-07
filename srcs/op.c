@@ -10,7 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../includes/op.h"
+#include "op.h"
+
+typedef struct			s_op
+{
+	char				*name;
+	unsigned int		parameters_nbr;
+	unsigned int		parameter_types[3];
+	unsigned int		instruction_nbr;
+	unsigned int		cycles;
+	char				*description;
+	unsigned int		why;
+	unsigned int		why_not;
+}						t_op;
 
 t_op    op_tab[17] =
 {

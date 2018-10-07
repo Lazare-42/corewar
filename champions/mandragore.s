@@ -9,6 +9,7 @@ entry:
 	ld		%0, r2
 
 fwall:
+sss:
 	live	%569092
 	st		r2, -24
 	st		r2, -33
@@ -77,7 +78,8 @@ spore:
 	live	%265924
 	fork	%:petale
 	zjmp	%:petale
-
+	zjmp	%:petale
+	zjmp	%:petale
 second_entry:
 	sti r1, %:feuille, %1
 	ld	%1, r3

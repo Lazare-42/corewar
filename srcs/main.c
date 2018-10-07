@@ -14,6 +14,47 @@
 #include "../includes/asm.h"
 #include <unistd.h>
 
+static int		g_initial_parser[8][8][2] = {
+								//	 0		 1		 2		 3		 4		 5		 6		 7 
+								//   0		 ?		 AN		 WP		 ,		 :		 %		 \n
+
+	/* 0. End State				*/	{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 
+
+	/* 1. Default				*/	{{0, 0}, {7, 0}, {2, 0}, {1, 1}, {7, 0}, {7, 0}, {7, 0}, {1, 1}}, 
+
+	/* 2. Function				*/	{{7, 0}, {7, 0}, {2, 1}, {4, 0}, {7, 0}, {3, 1}, {7, 0}, {7, 0}}, 
+
+	/* 3. Label					*/	{{1, 0}, {7, 0}, {7, 0}, {1, 0}, {7, 0}, {7, 0}, {7, 0}, {1, 0}}, 
+
+	/* 4. Argument Input wait	*/	{{1, 0}, {7, 0}, {5, 0}, {4, 1}, {7, 0}, {7, 0}, {5, 0}, {1, 0}}, 
+
+	/* 5. Argument Input		*/	{{1, 0}, {7, 0}, {5, 1}, {6, 0}, {4, 1}, {5, 1}, {5, 1}, {1, 0}}, 
+
+	/* 6. WP after Arg			*/	{{1, 0}, {7, 0}, {7, 0}, {6, 1}, {4, 1}, {7, 0}, {7, 0}, {1, 0}}, 
+
+	/* 7. Error					*/	{{1, 0}, {7, 1}, {7, 1}, {1, 0}, {7, 1}, {7, 1}, {7, 1}, {1, 0}}, 
+
+};
+
+
+static int    g_alpha[128] = {
+	0,
+	1, 1, 1, 1, 1, 1, 1, 1, 3, 7,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+	1, 3, 1, 1, 1, 1, 6, 1, 1, 1,
+	1, 1, 1, 4, 2, 1, 1, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 5, 1, 1,
+	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	1, 1, 1, 1, 2, 1, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+	2, 2, 1, 1, 1, 1, 1
+};
+
+
 int		check_label(char *label)
 {
 	int i;
@@ -56,81 +97,57 @@ char	check_1_command(char *command, char match)
 	return (0);
 }
 
-static int		g_initial_parser[8][8][2] = {
-							//	 0		 1		 2		 3		 4		 5		 6		 7 
-							//   0		 ?		 AN		 WP		 ,		 :		 %		 \n
-	
-/* 0. End State				*/	{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}}, 
-                                                                                               
-/* 1. Default				*/	{{0, 0}, {7, 0}, {2, 0}, {1, 1}, {7, 0}, {7, 0}, {7, 0}, {1, 1}}, 
-                                                                                               
-/* 2. Function				*/	{{7, 0}, {7, 0}, {2, 1}, {4, 0}, {7, 0}, {3, 1}, {7, 0}, {7, 0}}, 
-                                                                                               
-/* 3. Label					*/	{{1, 0}, {7, 0}, {7, 0}, {1, 0}, {7, 0}, {7, 0}, {7, 0}, {1, 0}}, 
-                                                                                               
-/* 4. Argument Input wait	*/	{{1, 0}, {7, 0}, {5, 0}, {4, 1}, {7, 0}, {7, 0}, {5, 0}, {1, 0}}, 
-                                                                                               
-/* 5. Argument Input		*/	{{1, 0}, {7, 0}, {5, 1}, {6, 0}, {4, 1}, {5, 1}, {5, 1}, {1, 0}}, 
-                                                                                               
-/* 6. WP after Arg			*/	{{1, 0}, {7, 0}, {7, 0}, {6, 1}, {4, 1}, {7, 0}, {7, 0}, {1, 0}}, 
-                                                                                               
-/* 7. Error					*/	{{1, 0}, {7, 1}, {7, 1}, {1, 0}, {7, 1}, {7, 1}, {7, 1}, {1, 0}}, 
-
-};
-
-
-static int    g_alpha[128] = {
-	0,
-	1, 1, 1, 1, 1, 1, 1, 1, 3, 7,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-	1, 3, 1, 1, 1, 1, 6, 1, 1, 1,
-	1, 1, 1, 4, 2, 1, 1, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 5, 1, 1,
-	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	1, 1, 1, 1, 1, 1, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-	2, 2, 1, 1, 1, 1, 1
-};
-
-void	save_tokens(char *line, int *command_start, int i, int begin_state, int end_state)
+void	save_tokens(t_info *info, int *command_start, int begin_state, int end_state)
 {
-	int tmp;
+	unsigned int tmp;
 
 	tmp = *command_start;
-	while (tmp < i)
+	if (begin_state == 7 || end_state == 7)
 	{
-		ft_printf("[[yellow]]");
-		ft_putchar((int)line[tmp]);
-		tmp++;
-		ft_printf("[[end]]");
+		ft_printf("[[red]] ");
+		while (tmp < info->read_pos)
+		{
+			ft_putchar((int)info->file[tmp]);
+			tmp++;
+		}
+		ft_printf(" [[end]]");
 	}
-	if (begin_state == 7)
-		ft_printf("[[red]]error%d", begin_state);
-	if (end_state == 7)
-		ft_printf("[[red]] error %d[[end]]", end_state);
 	if (begin_state == 2 && end_state == 4)
 	{
-		*command_start = i;
-		ft_printf("[[green]] command[[end]]\n");
+		ft_printf("\n[[blue]]");
+		while (tmp < info->read_pos)
+		{
+			ft_printf("[[yellow]]");
+			ft_putchar((int)info->file[tmp]);
+			tmp++;
+		}
+		ft_printf(" [[end]]");
 	}
 	if (begin_state == 2 && end_state == 3)
 	{
-		*command_start = i;
-		ft_printf("[[green]] label[[end]]\n");
+		ft_printf("\n[[cyan]]");
+		while (tmp < info->read_pos)
+		{
+			ft_putchar((int)info->file[tmp]);
+			tmp++;
+		}
+		ft_printf("[[end]]");
 	}
 	if (begin_state == 5 && (end_state == 1 || end_state == 4 || end_state == 5))
 	{
-		*command_start = i;
-		ft_printf("[[green]] arg[[end]]\n");
+		while (tmp < info->read_pos)
+		{
+			ft_printf("[[green]]");
+			ft_putchar((int)info->file[tmp]);
+			tmp++;
+			ft_printf("[[end]]");
+		}
+		ft_printf(" [[end]]");
 	}
-	*command_start = i;
+	*command_start = info->read_pos;
 }
 
-void	lexe_one_token(int i, char *line)
+void	lexe_tokens(t_info *info)
 {
 	int begin_state;
 	int end_state;
@@ -138,43 +155,32 @@ void	lexe_one_token(int i, char *line)
 
 	end_state = 1;
 	begin_state = 1;
-	command_start = i;
+	command_start = info->read_pos;
 	while (begin_state)
 	{
 		begin_state = end_state;
-		end_state = g_initial_parser[begin_state][g_alpha[(int)line[i]]][0];
+		end_state = g_initial_parser[begin_state][g_alpha[(int)info->file[info->read_pos]]][0];
 		if (begin_state != end_state)
-			save_tokens(line, &command_start, i, begin_state, end_state);
-		i += g_initial_parser[begin_state][g_alpha[(int)line[i]]][1];
+			save_tokens(info, &command_start, begin_state, end_state);
+		info->read_pos += g_initial_parser[begin_state][g_alpha[(int)info->file[info->read_pos]]][1];
 		if (end_state == 1)
-			command_start = i;
+			command_start = info->read_pos;
 	}
 }
-
-
-
-void	read_instructions(t_info *info, t_instruction instructions)
-{
-	(void)instructions;
-	(void)info;
-	lexe_one_token(info->read_pos, info->file);
-}
-
 
 // check at the beginning if integers are of size 4 (always the case)
 int		main(int ac, char **av)
 {
 	t_fd			fd;
 	t_info			info;
-	t_instruction	instructions;
 
 	fd.read = -1;
 	fd.write = -1;
-	instructions = set_instructions(); 
 	info.label_info.label_list = NULL;
 	info.label_info.label_categories = LABEL_INITIAL_NBR;
 	info.label_info.n = 0;
 	info.to_write = NULL;
+	info.tokens = NULL;
 	info.to_write_size = sizeof(info.header);
 	info.write_pos = sizeof(info.header);
 	malloc_resize_write_size(&info);
@@ -186,14 +192,14 @@ int		main(int ac, char **av)
 	info.read_pos = 0;
 
 	store_name_comment(&info, PROG_NAME_LENGTH);
-//	ft_printf("%s\n", &info.file[info.read_pos]);
-	read_instructions(&info, instructions);
-//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
+	lexe_tokens(&info);
+	//	ft_printf("%s\n", &info.file[info.read_pos]);
+	//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
 	/*
-	check_label_list(&(info.label_info));
-	input_labels(&(info.label_info), &info);
-	write_file(fd, &info);
-	*/
+	   check_label_list(&(info.label_info));
+	   input_labels(&(info.label_info), &info);
+	   write_file(fd, &info);
+	 */
 	close(fd.read);
-//	sleep(45);
+	//	sleep(45);
 }
