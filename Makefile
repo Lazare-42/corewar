@@ -6,6 +6,8 @@ SOURCES =	main.c \
 			label_management.c \
 			store_name_comment.c \
 			write_binary.c \
+			debug.c \
+			parser.c \
 
 LIBDIR = libft
 

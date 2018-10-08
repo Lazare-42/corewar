@@ -6,13 +6,14 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/30 14:17:53 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/08 12:25:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/includes/libft.h"
 #include "../includes/asm.h"
 #include <unistd.h>
+#include <stdlib.h>
 
 static int		g_initial_parser[8][8][2] = {
 								//	 0		 1		 2		 3		 4		 5		 6		 7 
@@ -26,7 +27,7 @@ static int		g_initial_parser[8][8][2] = {
 
 	/* 3. Label					*/	{{1, 0}, {7, 0}, {7, 0}, {1, 0}, {7, 0}, {7, 0}, {7, 0}, {1, 0}}, 
 
-	/* 4. Argument Input wait	*/	{{1, 0}, {7, 0}, {5, 0}, {4, 1}, {7, 0}, {7, 0}, {5, 0}, {1, 0}}, 
+	/* 4. Argument Input wait	*/	{{1, 0}, {7, 0}, {5, 0}, {4, 1}, {7, 0}, {5, 0}, {5, 0}, {1, 0}}, 
 
 	/* 5. Argument Input		*/	{{1, 0}, {7, 0}, {5, 1}, {6, 0}, {4, 1}, {5, 1}, {5, 1}, {1, 0}}, 
 
@@ -97,54 +98,58 @@ char	check_1_command(char *command, char match)
 	return (0);
 }
 
+void	malloc_resize_token_tab(t_info *info)
+{
+	t_token	*new_tab;
+	unsigned int		i;
+
+	new_tab = NULL;
+	if (info->tokens)
+		info->token_struct_size *= 2;
+	if (!(new_tab = malloc(sizeof(t_token) * info->token_struct_size)))
+		ft_myexit("malloc error in malloc_resize_token_tab");
+	if (info->tokens)
+	{
+		i = 0;
+		while (i < info->token_nbr)
+		{
+			new_tab[i] = info->tokens[i];
+			i++;
+		}
+		ft_memdel((void**)&(info->tokens));
+	}
+	info->tokens = new_tab;
+}
+
+
 void	save_tokens(t_info *info, int *command_start, int begin_state, int end_state)
 {
+	static int debug = 1;
+	if (DEBUG)
+		token_debug(info, command_start, begin_state, end_state);
 	unsigned int tmp;
 
 	tmp = *command_start;
-	if (begin_state == 7 || end_state == 7)
+	if (begin_state == ERROR || end_state == ERROR)
 	{
-		ft_printf("[[red]] ");
-		while (tmp < info->read_pos)
-		{
-			ft_putchar((int)info->file[tmp]);
-			tmp++;
-		}
-		ft_printf(" [[end]]");
+		// save error
 	}
-	if (begin_state == 2 && end_state == 4)
+	if (begin_state == FUNCTION && end_state == ARG_INPUT_WAIT)
 	{
-		ft_printf("\n[[blue]]");
-		while (tmp < info->read_pos)
-		{
-			ft_printf("[[yellow]]");
-			ft_putchar((int)info->file[tmp]);
-			tmp++;
-		}
-		ft_printf(" [[end]]");
+		// save function
+		new_function_or_label(info, *command_start, FUNCTION);
 	}
-	if (begin_state == 2 && end_state == 3)
+	if (begin_state == FUNCTION && end_state == ANCHOR_LABEL)
 	{
-		ft_printf("\n[[cyan]]");
-		while (tmp < info->read_pos)
-		{
-			ft_putchar((int)info->file[tmp]);
-			tmp++;
-		}
-		ft_printf("[[end]]");
+		new_function_or_label(info, *command_start, LABEL);
 	}
-	if (begin_state == 5 && (end_state == 1 || end_state == 4 || end_state == 5))
+	if (begin_state == ARG_INPUT && (end_state == DEFAULT || end_state == ARG_INPUT_WAIT || end_state == WP_AFTER_ARG))
 	{
-		while (tmp < info->read_pos)
-		{
-			ft_printf("[[green]]");
-			ft_putchar((int)info->file[tmp]);
-			tmp++;
-			ft_printf("[[end]]");
-		}
-		ft_printf(" [[end]]");
+		new_argument(info, *command_start);
+		// add argument to function
 	}
 	*command_start = info->read_pos;
+	debug++;
 }
 
 void	lexe_tokens(t_info *info)
@@ -156,13 +161,19 @@ void	lexe_tokens(t_info *info)
 	end_state = 1;
 	begin_state = 1;
 	command_start = info->read_pos;
+	info->tokens = NULL;
+	info->token_struct_size = INITIAL_TOKEN_NBR;
+	info->token_nbr = 0;
+	malloc_resize_token_tab(info);
 	while (begin_state)
 	{
 		begin_state = end_state;
-		end_state = g_initial_parser[begin_state][g_alpha[(int)info->file[info->read_pos]]][0];
+		end_state = g_initial_parser
+			[begin_state][g_alpha[(int)info->file[info->read_pos]]][0];
 		if (begin_state != end_state)
 			save_tokens(info, &command_start, begin_state, end_state);
-		info->read_pos += g_initial_parser[begin_state][g_alpha[(int)info->file[info->read_pos]]][1];
+		info->read_pos += g_initial_parser
+			[begin_state][g_alpha[(int)info->file[info->read_pos]]][1];
 		if (end_state == 1)
 			command_start = info->read_pos;
 	}
@@ -179,8 +190,8 @@ int		main(int ac, char **av)
 	info.label_info.label_list = NULL;
 	info.label_info.label_categories = LABEL_INITIAL_NBR;
 	info.label_info.n = 0;
+	info.error = 0;
 	info.to_write = NULL;
-	info.tokens = NULL;
 	info.to_write_size = sizeof(info.header);
 	info.write_pos = sizeof(info.header);
 	malloc_resize_write_size(&info);
@@ -193,13 +204,15 @@ int		main(int ac, char **av)
 
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	lexe_tokens(&info);
+	print_function_list(&info);
 	//	ft_printf("%s\n", &info.file[info.read_pos]);
 	//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
 	/*
 	   check_label_list(&(info.label_info));
 	   input_labels(&(info.label_info), &info);
-	   write_file(fd, &info);
 	 */
+	if (0 == info.error)
+	 	write_file(fd, &info);
 	close(fd.read);
 	//	sleep(45);
 }

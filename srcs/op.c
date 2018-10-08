@@ -6,26 +6,15 @@
 /*   By: zaz <marvin@42.fr>                         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2013/10/04 11:43:01 by zaz               #+#    #+#             */
-/*   Updated: 2013/11/06 14:44:35 by zaz              ###   ########.fr       */
+/*   Updated: 2018/10/08 09:27:28 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "op.h"
 
-typedef struct			s_op
+t_op    op_tab[18] =
 {
-	char				*name;
-	unsigned int		parameters_nbr;
-	unsigned int		parameter_types[3];
-	unsigned int		instruction_nbr;
-	unsigned int		cycles;
-	char				*description;
-	unsigned int		why;
-	unsigned int		why_not;
-}						t_op;
-
-t_op    op_tab[17] =
-{
+	{"", 0, {0}, 0, 0, "first void line", 0, 0},
 	{"live", 1, {T_DIR}, 1, 10, "alive", 0, 0},
 	{"ld", 2, {T_DIR | T_IND, T_REG}, 2, 5, "load", 1, 0},
 	{"st", 2, {T_REG, T_IND | T_REG}, 3, 5, "store", 1, 0},
