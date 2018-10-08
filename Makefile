@@ -8,6 +8,7 @@ SOURCES =	main.c \
 			write_binary.c \
 			debug.c \
 			parser.c \
+			save_argument_labels.c \
 
 LIBDIR = libft
 

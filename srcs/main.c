@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 12:25:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/08 19:59:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,47 +56,7 @@ static int    g_alpha[128] = {
 };
 
 
-int		check_label(char *label)
-{
-	int i;
 
-	i = 0;
-	if (!(label) || label[0] == 0)
-		return (0);
-	while (label[i])
-	{
-		if (!(ft_strchr(LABEL_CHARS, label[i])))
-			return (0);
-		i++;
-	}
-	return (1);
-}
-
-char	check_1_command(char *command, char match)
-{
-	if (match & T_DIR && command[0] == DIRECT_CHAR)
-	{
-		if (command[1] == LABEL_CHAR)
-			if (check_label(&command[2]))
-				return (DIR_CODE);
-		if (ft_isnumber(&command[1]))
-			return (DIR_CODE);
-	}
-	if (match & T_IND)
-	{
-		if (command[0] == LABEL_CHAR)
-			if (check_label(&command[1]))
-				return (IND_CODE);
-		if (ft_isnumber(&command[0]))
-			return (IND_CODE);
-	}
-	if (match & T_REG)
-		if (command[0] == 'r')
-			if (ft_isnumber(&command[1]) && ft_atoi(&command[1]) <= REG_NUMBER)
-				return (REG_CODE);
-	ft_myexit(ft_strjoin(command, " (command) invoked with the wrong argument")); 
-	return (0);
-}
 
 void	malloc_resize_token_tab(t_info *info)
 {
@@ -121,6 +81,18 @@ void	malloc_resize_token_tab(t_info *info)
 	info->tokens = new_tab;
 }
 
+/*
+typedef struct	s_funct
+{
+	int			begin_state;
+	int			end_state;
+	void		(*func_pointer)(t_info*, int);
+}				t_funct;
+
+static t_funct	func_tab[5]  = {
+	{ FUNCTION, ARG_INPUT_WAIT, new_function_or_label
+	};
+	*/
 
 void	save_tokens(t_info *info, int *command_start, int begin_state, int end_state)
 {
@@ -132,11 +104,11 @@ void	save_tokens(t_info *info, int *command_start, int begin_state, int end_stat
 	tmp = *command_start;
 	if (begin_state == ERROR || end_state == ERROR)
 	{
+		// info->error  = 1;
 		// save error
 	}
 	if (begin_state == FUNCTION && end_state == ARG_INPUT_WAIT)
 	{
-		// save function
 		new_function_or_label(info, *command_start, FUNCTION);
 	}
 	if (begin_state == FUNCTION && end_state == ANCHOR_LABEL)
@@ -146,7 +118,6 @@ void	save_tokens(t_info *info, int *command_start, int begin_state, int end_stat
 	if (begin_state == ARG_INPUT && (end_state == DEFAULT || end_state == ARG_INPUT_WAIT || end_state == WP_AFTER_ARG))
 	{
 		new_argument(info, *command_start);
-		// add argument to function
 	}
 	*command_start = info->read_pos;
 	debug++;
@@ -177,6 +148,8 @@ void	lexe_tokens(t_info *info)
 		if (end_state == 1)
 			command_start = info->read_pos;
 	}
+	if (DEBUG)
+		print_function_list(info);
 }
 
 // check at the beginning if integers are of size 4 (always the case)
@@ -191,9 +164,11 @@ int		main(int ac, char **av)
 	info.label_info.label_categories = LABEL_INITIAL_NBR;
 	info.label_info.n = 0;
 	info.error = 0;
+
 	info.to_write = NULL;
 	info.to_write_size = sizeof(info.header);
 	info.write_pos = sizeof(info.header);
+
 	malloc_resize_write_size(&info);
 	if (ac != 2)
 		ft_myexit("You need to pass not more or less than one file to assemble");
@@ -204,7 +179,7 @@ int		main(int ac, char **av)
 
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	lexe_tokens(&info);
-	print_function_list(&info);
+	parse_functions(&info);
 	//	ft_printf("%s\n", &info.file[info.read_pos]);
 	//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
 	/*

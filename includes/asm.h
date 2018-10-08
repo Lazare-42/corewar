@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 12:22:52 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/08 19:59:34 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,12 +40,12 @@ typedef struct			s_op
 {
 	char				*name;
 	unsigned int		parameters_nbr;
-	unsigned int		parameter_types[3];
+	unsigned char		parameter_types[3];
 	unsigned int		instruction_nbr;
 	unsigned int		cycles;
 	char				*description;
 	unsigned int		why;
-	unsigned int		why_not;
+	unsigned int		double_dir_size;
 }						t_op;
 
 
@@ -100,10 +100,10 @@ typedef struct		s_info
 	t_header		header;
 	char			*to_write;
 
-	int				cmd_size;
-	int				cmd_begin_pos;
-	int				to_write_size;
-	int				write_pos;
+	unsigned int				cmd_size;
+	unsigned int				cmd_begin_pos;
+	unsigned int				to_write_size;
+	unsigned int				write_pos;
 }					t_info;
 
 t_instruction	set_instructions(void);
@@ -128,5 +128,6 @@ void	new_function_or_label(t_info *info, int command_start, int is_label);
 void	new_argument(t_info *info, int command_start);
 
 void	print_function_list(t_info *info);
+void	parse_functions(t_info *info);
 
 #endif
