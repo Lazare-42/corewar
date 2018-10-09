@@ -5,7 +5,6 @@ SOURCES =	main.c \
 			read_file.c \
 			label_management.c \
 			store_name_comment.c \
-			write_binary.c \
 			debug.c \
 			parser.c \
 			save_argument_labels.c \

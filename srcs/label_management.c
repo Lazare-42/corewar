@@ -12,17 +12,16 @@ static t_label	*new_malloced_label(t_label to_store)
 	return (new);
 }
 
-t_label new_label(char *name, int label_pos, int write_pos, int byte_size)
+t_label new_label(int pos_in_file, int len, int label_pos, int write_pos, int byte_size)
 {
 	t_label new;
 
-	new.name = NULL;
-	if (!(new.name = ft_strdup(name)))
-		ft_myexit("malloc error in new_label");
+	new.pos_in_file = pos_in_file;
+	new.name_len = len;
 	new.byte_size = byte_size;
-	new.next = NULL;
 	new.label_pos = label_pos;
 	new.write_pos = write_pos;
+	new.next = NULL;
 	return (new);
 }
 
@@ -71,38 +70,34 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 	(info->label_list)[i].write_pos = write_pos;
 	(info->label_list)[i].label_pos = label_pos;
 }
-
-void	add_label_to_list(t_label_info *info, t_label new)
+void	add_label_to_list(t_info *info, t_label new)
 {
 	int			i;
 	int			strlen_cmp;
-	int			strlen_new;
 	t_label		*tmp;
 
 	i = -1;
-	strlen_new = ft_strlen(new.name);
-	while (++i < info->n)
+	while (++i < info->label_info.n)
 	{
-		strlen_cmp = ft_strlen((info->label_list)[i].name);
-		if (strlen_cmp == strlen_new
-			&& !ft_memcmp((info->label_list)[i].name, new.name, strlen_new))
+		strlen_cmp = info->label_info.label_list[i].name_len;
+		if (strlen_cmp == new.name_len && !ft_memcmp(&info->file[info->label_info.label_list[i].pos_in_file], &info->file[new.pos_in_file], new.name_len))
 		{
-			tmp = &(info->label_list)[i];
+			tmp = &(info->label_info.label_list)[i];
 			while (tmp->next)
 				tmp = tmp->next;
 			tmp->next = new_malloced_label(new);
 			if (!((t_label*)tmp->next)->write_pos)
-				put_anchor_first(info, i, ((t_label*)tmp->next));
+				put_anchor_first(&(info->label_info), i, ((t_label*)tmp->next));
 			return ;
 		}
 	}
-	add_new_label_type(info, new, i);
+	add_new_label_type(&(info->label_info), new, i);
 }
 
-void	label_list(t_label_info *info, t_label new)
+void	label_list(t_info *info, t_label new)
 {
-	if (!(info->label_list))
-		create_label_list(info);
+	if (!(info->label_info.label_list))
+		create_label_list(&(info->label_info));
 	add_label_to_list(info, new);
 }
 
@@ -114,7 +109,7 @@ void	check_label_list(t_label_info *info)
 	while (i < info->n)
 	{
 		if (info->label_list[i].write_pos)
-			ft_myexit(ft_strjoin("invalid label : ", info->label_list[i].name));
+			ft_myexit("unable to dereference label : ");
 		i++;
 	}
 }
@@ -157,5 +152,28 @@ void	input_labels(t_label_info *label_info, t_info *info)
 			write_label(info, tmp->write_pos, distance, tmp->byte_size);
 			tmp = tmp->next;
 		}
+	}
+}
+
+#include <unistd.h>
+void		print_label_list(t_info *info)
+{
+	int i;
+	t_label	*tmp;
+
+	i = 0;
+	while (i < info->label_info.n)
+	{
+		ft_printf("[[blue]]");
+		write(1, &info->file[info->label_info.label_list[i].pos_in_file], info->label_info.label_list[i].name_len);
+		tmp = info->label_info.label_list[i].next;
+		while (tmp)
+		{
+			ft_printf("[[cyan]]->");
+			write(1, &info->file[tmp->pos_in_file], tmp->name_len);
+			tmp = tmp->next;
+		}
+		ft_printf("[[end]]\n");
+		i++;
 	}
 }

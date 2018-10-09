@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 19:59:01 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 22:57:24 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,37 @@
 #include "../includes/asm.h"
 #include <unistd.h>
 #include <stdlib.h>
+
+#include <fcntl.h>
+void	write_file(t_fd fd, t_info *info)
+{
+	if (ft_check_little_endianness())
+	info->header.prog_size = little_endian_to_big(info->write_pos - sizeof(info->header), sizeof(int));
+	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+	if (fd.write == -1)
+		ft_myexit("open error in write_file");
+	ft_memcpy(info->to_write, &info->header, sizeof(info->header));
+	write(fd.write, info->to_write, info->write_pos);
+	close(fd.write);
+}
+
+void	malloc_resize_write_size(t_info *info)
+{
+	char	*new_buffer;
+
+	new_buffer = NULL;
+	if (info->to_write)
+		info->to_write_size *= 2;
+	if (!(new_buffer = malloc(sizeof(char) * info->to_write_size)))
+		ft_myexit("malloc error in malloc_resize_write_size");
+	ft_memset(new_buffer, 0, info->to_write_size);
+	if (info->to_write_size != sizeof(info->header))
+	{
+		ft_memcpy(new_buffer, info->to_write, info->to_write_size / 2);
+		ft_memdel((void**)&(info->to_write));
+	}
+	info->to_write = new_buffer;
+}
 
 static int		g_initial_parser[8][8][2] = {
 								//	 0		 1		 2		 3		 4		 5		 6		 7 
@@ -38,7 +69,7 @@ static int		g_initial_parser[8][8][2] = {
 };
 
 
-static int    g_alpha[128] = {
+static unsigned int    g_alpha[128] = {
 	0,
 	1, 1, 1, 1, 1, 1, 1, 1, 3, 7,
 	1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
@@ -180,12 +211,8 @@ int		main(int ac, char **av)
 	store_name_comment(&info, PROG_NAME_LENGTH);
 	lexe_tokens(&info);
 	parse_functions(&info);
-	//	ft_printf("%s\n", &info.file[info.read_pos]);
-	//	ft_printf("[[red]]%d %d\n[[end]]", ',', g_alpha[44]);
-	/*
 	   check_label_list(&(info.label_info));
 	   input_labels(&(info.label_info), &info);
-	 */
 	if (0 == info.error)
 	 	write_file(fd, &info);
 	close(fd.read);

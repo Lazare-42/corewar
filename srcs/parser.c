@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/08 09:25:14 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 20:45:13 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 22:56:21 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,15 +58,16 @@ int		check_label(char *label, int size)
 	}
 	return (1);
 }
-
 int		is_num(char *to_check, int size)
 {
 	int i;
 
 	i = 0;
+	if (to_check[i] == '-')
+		i++;
 	while (i < size)
 	{
-		if (to_check[i] < '0' || i > '9')
+		if (to_check[i] < '0' || to_check[i] > '9')
 			return (0);
 		i++;
 	}
@@ -74,11 +75,11 @@ int		is_num(char *to_check, int size)
 }
 
 char	check_1_cmd(char *cmd, char match, int size)
-{
+{		
 	if (match & T_DIR && cmd[0] == DIRECT_CHAR)
 	{
 		if (cmd[1] == LABEL_CHAR)
-			if (check_label(&cmd[2], size))
+			if (check_label(&cmd[2], size - 2))
 				return (DIR_CODE);
 		if (is_num(&cmd[1], size - 1))
 			return (DIR_CODE);
@@ -86,7 +87,7 @@ char	check_1_cmd(char *cmd, char match, int size)
 	if (match & T_IND)
 	{
 		if (cmd[0] == LABEL_CHAR)
-			if (check_label(&cmd[1], size))
+			if (check_label(&cmd[1], size - 1))
 				return (IND_CODE);
 		if (is_num(&cmd[0], size - 1))
 			return (IND_CODE);
@@ -97,6 +98,7 @@ char	check_1_cmd(char *cmd, char match, int size)
 				return (REG_CODE);
 	// info->error  = 1;
 	// save error
+	// incorrect argument passed to function 
 	//ft_myexit("wrong instruction info");
 	return (0);
 }
@@ -127,15 +129,73 @@ int	check_one_function(unsigned char func_nbr, t_token function_token, t_info *i
 	return (1);
 }
 
-void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, t_cmd cmd_params)
+void	write_one_reg(t_info *info, int instruction_pos)
 {
-	(void)function_token;
-	(info->to_write)[info->write_pos] = func_nbr;
-	info->write_pos += 1;
-	if (cmd_params.cmd_binary << 2 || func_nbr == 16)
+	char	reg;
+
+	reg = ft_atoi(&info->file[instruction_pos + 1]);
+	ft_memcpy((void*)&info->to_write[info->write_pos], &reg, sizeof(char));
+	info->write_pos += T_REG;
+}
+
+void	write_one_indirect(t_info *info, int instruction_pos, int instruction_len)
+{
+	short	indirection;
+
+	if (info->file[instruction_pos] != LABEL_CHAR)
 	{
-		(info->to_write)[info->write_pos] = cmd_params.cmd_binary;
+		indirection = ft_atoi(&info->file[instruction_pos]);
+		if (ft_check_little_endianness())
+			indirection = little_endian_to_big(indirection, sizeof(short));
+		ft_memcpy((void*)&info->to_write[info->write_pos], &indirection, (T_IND / 2));
+	}
+	else
+	{
+		label_list(info, new_label(instruction_pos + 1, instruction_len - 1, info->cmd_begin_pos, info->write_pos,  T_IND / 2));
+	}
+	info->write_pos += T_IND / 2;
+}
+
+void	write_one_direct(t_info *info, unsigned int instruction_pos, unsigned int instruction_len, unsigned char func_nbr)
+{
+	int		reg_ind;
+
+	if (info->file[instruction_pos + 1] == LABEL_CHAR)
+	{
+		label_list(info, new_label(instruction_pos + 2, instruction_len - 2, info->cmd_begin_pos, info->write_pos, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR));
+	}
+	else
+	{
+		reg_ind = ft_atoi(&info->file[instruction_pos + 1]);
+		if (ft_check_little_endianness())
+			reg_ind = little_endian_to_big(reg_ind, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
+		ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR );
+	}
+	info->write_pos += (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR;
+}
+
+void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, unsigned char cmd_binary)
+{
+	int read_command_binary;
+
+	read_command_binary = 6;
+	(info->to_write)[info->write_pos] = func_nbr;
+	info->cmd_begin_pos = info->write_pos;
+	info->write_pos += 1;
+	if ((char)(cmd_binary << 2) || func_nbr == 16)
+	{
+		(info->to_write)[info->write_pos] = cmd_binary;
 		info->write_pos += 1;
+	}
+	while ((cmd_binary>> read_command_binary) & 3 && read_command_binary >= 2)
+	{
+		if (((cmd_binary >> read_command_binary) & 3) == REG_CODE)
+			write_one_reg(info, function_token.token[1 + 3 - read_command_binary / 2][0]);
+		if (((cmd_binary >> read_command_binary) & 3) == IND_CODE)
+			write_one_indirect(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0]);
+		if (((cmd_binary >> read_command_binary) & 3) == DIR_CODE)
+			write_one_direct(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0], func_nbr);
+		read_command_binary -= 2;
 	}
 }
 
@@ -157,13 +217,20 @@ void	parse_functions(t_info *info)
 				func_nbr++;
 			if (func_nbr == MAX_FUNC_NBR)
 			{
+				// error : unknown function
 				// info->error  = 1;
 				// save error
 			}
 			else
+			{
 				if (check_one_function(func_nbr, info->tokens[i], info, &cmd_params))
-					write_one_function(func_nbr, info->tokens[i], info, cmd_params); 
+				{
+					write_one_function(func_nbr, info->tokens[i], info, cmd_params.cmd_binary); 
+				}
+			}
 		}
+		else
+			label_list(info, new_label(info->tokens[i].token[0][0], info->tokens[i].token[0][1] - info->tokens[i].token[0][0], info->write_pos, 0, 0));
 		i++;
 	}
 }

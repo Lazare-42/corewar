@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 19:59:34 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 20:02:57 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,8 @@ typedef	struct		s_fd
 
 typedef struct		s_labels
 {
-	char			*name;
+	int				pos_in_file;
+	int				name_len;
 	int				label_pos;
 	int				write_pos;
 	int				byte_size;
@@ -80,7 +81,7 @@ typedef struct		s_label_info
 
 typedef struct		s_token
 {
-	unsigned int	token[4][8];
+	unsigned int	token[4][2];
 	unsigned int	func_nbr;
 	unsigned int	line_nbr;
 }					t_token;
@@ -114,14 +115,14 @@ typedef struct		s_info
 }					t_info;
 
 t_instruction	set_instructions(void);
-void		label_list(t_label_info *info, t_label new);
+void		label_list(t_info *info, t_label new);
 void		store_name_comment(t_info *info, int which);
 void		set_name_open_fd(t_info *info, t_fd *fd, char *to_open);
 void		read_file(t_info *info, t_fd fd);
-void		print_label_list(t_label_info *info);
+void		print_label_list(t_info *info);
 void		check_label_list(t_label_info *info);
 void		input_labels(t_label_info *label_info, t_info *info);
-t_label 	new_label(char *name, int label_pos, int write_pos, int byte_size);
+t_label 	new_label(int pos_in_file, int len, int label_pos, int write_pos, int byte_size);
 void		write_instruction(t_info *info, unsigned char command_binary, char **all_commands, int instruction_nbr);
 void		write_instruction_info(t_info *info, unsigned char command_binary, int instruction_nbr);
 void		malloc_resize_write_size(t_info *info);
