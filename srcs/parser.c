@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/08 09:25:14 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/09 23:22:25 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 23:28:42 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,16 +27,13 @@ static t_op    g_op_tab[17] =
 		"ou  (or   r1, r2, r3   r1 | r2 -> r3", 1, 0},
 	{"xor", 3, {T_REG | T_IND | T_DIR, T_REG | T_IND | T_DIR, T_REG}, 8, 6,
 		"ou (xor  r1, r2, r3   r1^r2 -> r3", 1, 0},
-
 	{"zjmp", 1, {T_DIR}, 9, 20, "jump if zero", 0, 1},
 	{"ldi", 3, {T_REG | T_DIR | T_IND, T_DIR | T_REG, T_REG}, 10, 25,
 		"load index", 1, 1},
 	{"sti", 3, {T_REG, T_REG | T_DIR | T_IND, T_DIR | T_REG}, 11, 25,
 		"store index", 1, 1},
 	{"fork", 1, {T_DIR}, 12, 800, "fork", 0, 1},
-
 	{"lld", 2, {T_DIR | T_IND, T_REG}, 13, 10, "long load", 1, 0},
-
 	{"lldi", 3, {T_REG | T_DIR | T_IND, T_DIR | T_REG, T_REG}, 14, 50,
 		"long load index", 1, 1},
 	{"lfork", 1, {T_DIR}, 15, 1000, "long fork", 0, 1},
@@ -129,75 +126,6 @@ int	check_one_function(unsigned char func_nbr, t_token function_token, t_info *i
 	return (1);
 }
 
-void	write_one_reg(t_info *info, int instruction_pos)
-{
-	char	reg;
-
-	reg = ft_atoi(&info->file[instruction_pos + 1]);
-	ft_memcpy((void*)&info->to_write[info->write_pos], &reg, sizeof(char));
-	info->write_pos += T_REG;
-}
-
-void	write_one_indirect(t_info *info, int instruction_pos, int instruction_len)
-{
-	short	indirection;
-
-	if (info->file[instruction_pos] != LABEL_CHAR)
-	{
-		indirection = ft_atoi(&info->file[instruction_pos]);
-		if (ft_check_little_endianness())
-			indirection = little_endian_to_big(indirection, sizeof(short));
-		ft_memcpy((void*)&info->to_write[info->write_pos], &indirection, (T_IND / 2));
-	}
-	else
-	{
-		label_list(info, new_label(instruction_pos + 1, instruction_len - 1, info->cmd_begin_pos, info->write_pos,  T_IND / 2));
-	}
-	info->write_pos += T_IND / 2;
-}
-
-void	write_one_direct(t_info *info, unsigned int instruction_pos, unsigned int instruction_len, unsigned char func_nbr)
-{
-	int		reg_ind;
-
-	if (info->file[instruction_pos + 1] == LABEL_CHAR)
-	{
-		label_list(info, new_label(instruction_pos + 2, instruction_len - 2, info->cmd_begin_pos, info->write_pos, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR));
-	}
-	else
-	{
-		reg_ind = ft_atoi(&info->file[instruction_pos + 1]);
-		if (ft_check_little_endianness())
-			reg_ind = little_endian_to_big(reg_ind, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
-		ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
-	}
-	info->write_pos += (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR;
-}
-
-void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, unsigned char cmd_binary)
-{
-	int read_command_binary;
-
-	read_command_binary = 6;
-	(info->to_write)[info->write_pos] = func_nbr;
-	info->cmd_begin_pos = info->write_pos;
-	info->write_pos += 1;
-	if ((char)(cmd_binary << 2) || func_nbr == 16)
-	{
-		(info->to_write)[info->write_pos] = cmd_binary;
-		info->write_pos += 1;
-	}
-	while ((cmd_binary>> read_command_binary) & 3 && read_command_binary >= 2)
-	{
-		if (((cmd_binary >> read_command_binary) & 3) == REG_CODE)
-			write_one_reg(info, function_token.token[1 + 3 - read_command_binary / 2][0]);
-		if (((cmd_binary >> read_command_binary) & 3) == IND_CODE)
-			write_one_indirect(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0]);
-		if (((cmd_binary >> read_command_binary) & 3) == DIR_CODE)
-			write_one_direct(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0], func_nbr);
-		read_command_binary -= 2;
-	}
-}
 
 void	parse_functions(t_info *info)
 {

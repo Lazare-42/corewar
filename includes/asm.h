@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 21:05:44 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/09 20:02:57 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 23:47:02 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@
 
 #define LABEL					17
 #define MAX_FUNC_NBR			17
+
+#define	XOR_FUNC_NBR			9
 
 typedef struct			s_op
 {
@@ -137,5 +139,8 @@ void	new_argument(t_info *info, int command_start);
 
 void	print_function_list(t_info *info);
 void	parse_functions(t_info *info);
+void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, unsigned char cmd_binary);
+int		is_num(char *to_check, unsigned int size);
+int		check_label(char *label, unsigned int size);
 
 #endif
