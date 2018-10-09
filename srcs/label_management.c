@@ -27,7 +27,7 @@ t_label new_label(int pos_in_file, int len, int label_pos, int write_pos, int by
 
 void	create_label_list(t_label_info *info)
 {
-	int i;
+	unsigned int i;
 	t_label	*new_label_list;
 
 	new_label_list = NULL;
@@ -72,9 +72,9 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 }
 void	add_label_to_list(t_info *info, t_label new)
 {
-	int			i;
-	int			strlen_cmp;
-	t_label		*tmp;
+	unsigned int			i;
+	unsigned int			strlen_cmp;
+	t_label					*tmp;
 
 	i = -1;
 	while (++i < info->label_info.n)
@@ -103,7 +103,7 @@ void	label_list(t_info *info, t_label new)
 
 void	check_label_list(t_label_info *info)
 {
-	int			i;
+	unsigned int			i;
 
 	i = 0;
 	while (i < info->n)
@@ -136,7 +136,7 @@ void	write_label(t_info *info, int where, short distance, int byte_size)
 
 void	input_labels(t_label_info *label_info, t_info *info)
 {
-	int		i;
+	unsigned int		i;
 	t_label	*tmp;
 	int		pos;
 	short	distance;
@@ -158,7 +158,7 @@ void	input_labels(t_label_info *label_info, t_info *info)
 #include <unistd.h>
 void		print_label_list(t_info *info)
 {
-	int i;
+	unsigned int i;
 	t_label	*tmp;
 
 	i = 0;

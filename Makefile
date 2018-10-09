@@ -8,6 +8,7 @@ SOURCES =	main.c \
 			parser.c \
 			save_argument_labels.c \
 			check_func_argument.c \
+			malloc.c \
 
 LIBDIR = libft
 
@@ -43,7 +44,7 @@ $(NAME): $(OBJS)
 	@echo "\x1B[33;4mCompiled with the rule\x1B[0m   \x1B[33;1m:\x1B[0m " ${CC} $(CFLAGS)
 	@$(OK)
 
-$(ODIR)/%.o : $(SDIR)/%.c ./Makefile ./includes/asm.h ./libft/libft.a
+$(ODIR)/%.o : $(SDIR)/%.c ./Makefile ./includes/asm.h ./libft/libft.a ./includes/asm_structs.h
 	@ echo "[34mAssembling lem-in object : [0m" $@
 	@ $(CC) $(CFLAGS) -c -o $@ $< -I$(INCDIR)
 
