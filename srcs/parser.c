@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/08 09:25:14 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/09 22:56:21 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/09 23:22:25 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,16 +162,16 @@ void	write_one_direct(t_info *info, unsigned int instruction_pos, unsigned int i
 
 	if (info->file[instruction_pos + 1] == LABEL_CHAR)
 	{
-		label_list(info, new_label(instruction_pos + 2, instruction_len - 2, info->cmd_begin_pos, info->write_pos, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR));
+		label_list(info, new_label(instruction_pos + 2, instruction_len - 2, info->cmd_begin_pos, info->write_pos, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR));
 	}
 	else
 	{
 		reg_ind = ft_atoi(&info->file[instruction_pos + 1]);
 		if (ft_check_little_endianness())
-			reg_ind = little_endian_to_big(reg_ind, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
-		ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR );
+			reg_ind = little_endian_to_big(reg_ind, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
+		ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR);
 	}
-	info->write_pos += (func_nbr < 8 || func_nbr == 13) ? T_DIR * 2 : T_DIR;
+	info->write_pos += (func_nbr < 9 || func_nbr == 13) ? T_DIR * 2 : T_DIR;
 }
 
 void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, unsigned char cmd_binary)
