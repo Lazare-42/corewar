@@ -61,5 +61,6 @@ t_label			*new_malloced_label(t_label to_store);
 void			write_label(t_info *info, int where,
 		short distance, int byte_size);
 void			write_file(t_fd fd, t_info *info);
+void			lexe_tokens(t_info *info);
 
 #endif
