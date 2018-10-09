@@ -110,7 +110,7 @@ void	write_instruction_info(t_info *info, unsigned char command_binary, int inst
 		(info->to_write)[info->write_pos] = command_binary;
 		info->write_pos += 1;
 	}
-	info->cmd_size = cmd_size;
+	//info->cmd_size = cmd_size;
 }
 
 void	write_file(t_fd fd, t_info *info)

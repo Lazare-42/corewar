@@ -35,6 +35,7 @@
 #define INITIAL_WRITE_SIZE		4096
 
 #define LABEL					17
+#define MAX_FUNC_NBR			17
 
 typedef struct			s_op
 {
@@ -84,6 +85,13 @@ typedef struct		s_token
 	unsigned int	line_nbr;
 }					t_token;
 
+typedef struct		s_cmd
+{
+	unsigned char	cmd_binary;
+	unsigned char	one_cmd;
+	unsigned char	cmd_size;
+}					t_cmd;
+
 typedef struct		s_info
 {
 	unsigned int	error;
@@ -100,7 +108,6 @@ typedef struct		s_info
 	t_header		header;
 	char			*to_write;
 
-	unsigned int				cmd_size;
 	unsigned int				cmd_begin_pos;
 	unsigned int				to_write_size;
 	unsigned int				write_pos;
