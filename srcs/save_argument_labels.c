@@ -23,6 +23,7 @@ void	new_argument(t_info *info, int command_start)
 	if (i == 4)
 	{
 		info->error = 1;
+		// you inputed too many arguments
 		// go into error mode
 	}
 	else

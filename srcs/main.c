@@ -216,5 +216,5 @@ int		main(int ac, char **av)
 	if (0 == info.error)
 	 	write_file(fd, &info);
 	close(fd.read);
-	//	sleep(45);
+	sleep(45);
 }

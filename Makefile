@@ -1,14 +1,13 @@
 NAME = asm
 
 SOURCES =	main.c \
-			instruction_parameter.c \
 			read_file.c \
 			write_binary.c \
 			label_management.c \
 			store_name_comment.c \
-			debug.c \
 			parser.c \
 			save_argument_labels.c \
+			check_func_argument.c \
 
 LIBDIR = libft
 
