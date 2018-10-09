@@ -9,6 +9,7 @@ SOURCES =	main.c \
 			save_argument_labels.c \
 			check_func_argument.c \
 			malloc.c \
+			write_operations.c \
 
 LIBDIR = libft
 

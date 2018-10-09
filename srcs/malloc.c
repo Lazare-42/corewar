@@ -42,3 +42,34 @@ void	malloc_resize_token_tab(t_info *info)
 	}
 	info->tokens = new_tab;
 }
+
+void	malloc_resize_label_list(t_label_info *info)
+{
+	unsigned int i;
+	t_label	*new_label_list;
+
+	new_label_list = NULL;
+	if (!(new_label_list = malloc(sizeof(t_label) * info->label_categories)))
+		ft_myexit("malloc error in malloc_resize_label_list");
+	if (info->label_list)
+	{
+		i = 0;
+		while (i < info->label_categories / 2)
+		{
+			new_label_list[i] = info->label_list[i];
+			i++;
+		}
+		ft_memdel((void**)&(info->label_list));
+	}
+	info->label_list = new_label_list;
+}
+
+t_label	*new_malloced_label(t_label to_store)
+{
+	t_label *new;
+
+	if (!(new = malloc(sizeof(t_label))))
+		ft_myexit("malloc error");
+	*new = to_store;
+	return (new);
+}

@@ -1,9 +1,7 @@
 #ifndef ASM_STRUCTS_H
 # define ASM_STRUCTS_H
 
-#include "./asm.h"
-
-#define INSTRUCT_NBR			16
+# define INSTRUCT_NBR			16
 
 typedef struct					s_op
 {

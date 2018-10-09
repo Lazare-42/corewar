@@ -14,19 +14,6 @@
 #include "../includes/asm.h"
 #include <unistd.h>
 
-#include <fcntl.h>
-void	write_file(t_fd fd, t_info *info)
-{
-	if (ft_check_little_endianness())
-	info->header.prog_size = little_endian_to_big(info->write_pos - sizeof(info->header), sizeof(int));
-	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
-	if (fd.write == -1)
-		ft_myexit("open error in write_file");
-	ft_memcpy(info->to_write, &info->header, sizeof(info->header));
-	write(fd.write, info->to_write, info->write_pos);
-	close(fd.write);
-}
-
 static int		g_initial_parser[8][8][2] = {
 								//	 0		 1		 2		 3		 4		 5		 6		 7 
 								//   0		 ?		 AN		 WP		 ,		 :		 %		 \n
@@ -67,28 +54,9 @@ static unsigned int    g_alpha[128] = {
 	2, 2, 1, 1, 1, 1, 1
 };
 
-
-
-
-
-/*
-typedef struct	s_funct
-{
-	int			begin_state;
-	int			end_state;
-	void		(*func_pointer)(t_info*, int);
-}				t_funct;
-
-static t_funct	func_tab[5]  = {
-	{ FUNCTION, ARG_INPUT_WAIT, new_function_or_label
-	};
-	*/
-
 void	save_tokens(t_info *info, int *command_start, int begin_state, int end_state)
 {
 	static int debug = 1;
-	if (DEBUG)
-		token_debug(info, command_start, begin_state, end_state);
 	unsigned int tmp;
 
 	tmp = *command_start;
@@ -138,8 +106,6 @@ void	lexe_tokens(t_info *info)
 		if (end_state == 1)
 			command_start = info->read_pos;
 	}
-	if (DEBUG)
-		print_function_list(info);
 }
 
 // check at the beginning if integers are of size 4 (always the case)
