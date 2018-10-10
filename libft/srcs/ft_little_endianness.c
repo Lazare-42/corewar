@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/06/25 17:58:43 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/09/24 15:40:35 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/11 01:05:01 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 ** this function returns 1 if the machine is little-endian
 */
 
-int	ft_check_little_endianness(void)
+int						ft_check_little_endianness(void)
 {
 	unsigned int	x;
 	char			*c;
@@ -28,7 +28,8 @@ int	ft_check_little_endianness(void)
 	return ((int)*c);
 }
 
-unsigned long long		little_endian_to_big(unsigned long long src, int sizeof_var)
+unsigned long long		little_endian_to_big(unsigned long long src,
+		int sizeof_var)
 {
 	unsigned char					tmp[sizeof(unsigned long long)];
 	unsigned char					*number;

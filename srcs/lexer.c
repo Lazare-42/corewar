@@ -6,11 +6,12 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/10 12:50:37 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/10 23:55:02 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/11 00:34:47 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/includes/libft.h"
+#include <unistd.h>
 #include "../includes/asm.h"
 
 /*
@@ -91,13 +92,8 @@ static unsigned	int	g_ascii_tab[128] = {
 static void	save_tokens(t_info *info, int *command_start,
 		int begin_state, int end_state)
 {
-	if (begin_state == ERROR || end_state == ERROR)
-	{
-		info->error = 1;
-		ft_printf("%.15s\n", &info->file[info->read_pos]);
-		ft_myexit("error here");
-		// save error
-	}
+	if (begin_state == ERROR)
+		syntax_error(info, *command_start, info->read_pos - *command_start);
 	if (begin_state == FUNCTION && end_state == ARG_INPUT_WAIT)
 	{
 		new_function_or_label(info, *command_start, FUNCTION);

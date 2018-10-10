@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   write_operations.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/11 00:08:43 by lazrossi          #+#    #+#             */
+/*   Updated: 2018/10/11 00:10:12 by lazrossi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
 #include <unistd.h>
@@ -9,9 +21,11 @@ void	write_file(t_fd fd, t_info *info)
 	{
 		info->header.prog_size =
 		little_endian_to_big
-		(info->write_pos - sizeof(info->header), sizeof(int));
+(info->write_pos - sizeof(info->header), sizeof(int));
 	}
 	fd.write = open(info->file_name, O_RDWR | O_CREAT | O_TRUNC, S_IRWXU);
+	ft_printf("Writing output to [[italic]][[yellow]]%s\n[[end]]",
+			info->file_name);
 	if (fd.write == -1)
 		ft_myexit("open error in write_file");
 	ft_memcpy(info->to_write, &info->header, sizeof(info->header));

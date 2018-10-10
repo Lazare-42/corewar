@@ -12,4 +12,5 @@ l3:	ldi	%:l2, r2, r4
 live:	zjmp	%:l1 - 100
 	xor	r4, r4, r4
 	zjmp	%:l3
+	lol		%:14
 l2:

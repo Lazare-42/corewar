@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/28 16:16:15 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/10 12:50:10 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/11 00:50:34 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,8 @@ static void	write_one_indirect(t_info *info, int instruct_pos, int instruct_len)
 	}
 	else
 	{
-		label_list(info, new_label(instruct_pos + 1,
-					instruct_len - 1, info->cmd_begin_pos,
+		label_list(info, new_label(new_label_first(instruct_pos + 1,
+					instruct_len - 1), info->cmd_begin_pos,
 					info->write_pos,
 					T_IND / 2));
 	}
@@ -53,7 +53,7 @@ static void	write_one_direct(t_info *info, unsigned int instruct_pos,
 
 	if (LABEL_CHAR == info->file[instruct_pos + 1])
 		label_list(info,
-				new_label(instruct_pos + 2, instruct_len - 2,
+				new_label(new_label_first(instruct_pos + 2, instruct_len - 2),
 					info->cmd_begin_pos, info->write_pos,
 					(func_nbr < XOR_FUNC_NBR || func_nbr == 13) ?
 					T_DIR * 2 : T_DIR));

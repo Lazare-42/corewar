@@ -6,12 +6,13 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/08 12:35:09 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/08 12:35:34 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/11 00:59:21 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
+#include <unistd.h>
 
 void	new_argument(t_info *info, int command_start)
 {
@@ -23,8 +24,9 @@ void	new_argument(t_info *info, int command_start)
 	if (i == 4)
 	{
 		info->error = 1;
-		// you inputed too many arguments
-		// go into error mode
+		ft_printf("One argument too many : [[red]][[bold]][[underline]]");
+		write(1, &info->file[command_start], info->read_pos - command_start);
+		ft_printf("[[end]]\n");
 	}
 	else
 	{
@@ -33,7 +35,8 @@ void	new_argument(t_info *info, int command_start)
 	}
 }
 
-void	new_function_or_label(t_info *info, int command_start, int func_or_label)
+void	new_function_or_label(t_info *info, int command_start,
+		int func_or_label)
 {
 	t_token new;
 
@@ -43,7 +46,6 @@ void	new_function_or_label(t_info *info, int command_start, int func_or_label)
 	new.token[2][0] = 0;
 	new.token[3][0] = 0;
 	new.func_nbr = func_or_label;
-	// you need to save line number here
 	info->tokens[info->token_nbr] = new;
 	info->token_nbr++;
 	if (info->token_nbr == info->token_struct_size)

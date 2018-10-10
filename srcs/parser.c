@@ -6,14 +6,14 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/10/08 09:25:14 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/10 13:11:37 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/11 00:58:02 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
 
-static t_op    g_op_tab[17] =
+static t_op		g_op_tab[17] =
 {
 	{"", 0, {0}, 0, 0, "first void line", 0, 0},
 	{"live", 1, {T_DIR}, 1, 10, "alive", 0, 0},
@@ -40,8 +40,8 @@ static t_op    g_op_tab[17] =
 	{"aff", 1, {T_REG}, 16, 2, "aff", 1, 0},
 };
 
-char	check_1_cmd(char *cmd, char match, int size)
-{		
+static char		check_1_cmd(char *cmd, char match, int size)
+{
 	if (match & T_DIR && cmd[0] == DIRECT_CHAR)
 	{
 		if (cmd[1] == LABEL_CHAR)
@@ -62,72 +62,77 @@ char	check_1_cmd(char *cmd, char match, int size)
 		if (cmd[0] == 'r')
 			if (is_num(&cmd[1], size - 1) && ft_atoi(&cmd[1]) <= REG_NUMBER)
 				return (REG_CODE);
-	// info->error  = 1;
-	// save error
-	// incorrect argument passed to function 
-	//ft_myexit("wrong instruction info");
+	incorrect_argument(cmd, size);
 	return (0);
 }
 
-int	check_one_function(unsigned char func_nbr, t_token function_token, t_info *info, t_cmd *cmd_params)
+static int		check_one_function(unsigned char func_nbr, t_token ft_token,
+		t_info *info, t_cmd *cmd_params)
 {
 	unsigned int	i;
 
-	i = 0;
+	i = -1;
 	cmd_params->cmd_binary = 0;
 	cmd_params->cmd_size = 0;
-	while (i < g_op_tab[func_nbr].parameters_nbr)
+	while (++i < g_op_tab[func_nbr].parameters_nbr)
 	{
-		if (!(cmd_params->one_cmd = check_1_cmd(&info->file[function_token.token[i + 1][0]], g_op_tab[func_nbr].parameter_types[i], function_token.token[i + 1][1] - function_token.token[i + 1][0])))
+		if (!(cmd_params->one_cmd = check_1_cmd(&info->file[ft_token.token
+			[i + 1][0]], g_op_tab[func_nbr].parameter_types[i],
+				ft_token.token[i + 1][1] - ft_token.token[i + 1][0])))
 			return (0);
 		if (cmd_params->one_cmd == REG_CODE)
 			cmd_params->cmd_size += T_REG;
 		else if (cmd_params->one_cmd == IND_CODE)
 			cmd_params->cmd_size += T_IND;
 		else if (cmd_params->one_cmd == DIR_CODE)
-			cmd_params->cmd_size += (g_op_tab[func_nbr].double_dir_size) ? T_DIR * 2 : T_DIR;
-		cmd_params->cmd_binary |=  cmd_params->one_cmd << (6 - i * 2);
-		i++;
+			cmd_params->cmd_size += (g_op_tab[func_nbr].double_dir_size) ?
+				T_DIR * 2 : T_DIR;
+		cmd_params->cmd_binary |= cmd_params->one_cmd << (6 - i * 2);
 	}
-	cmd_params->cmd_size += (cmd_params->cmd_binary << 2 || func_nbr == 16) ? 2 : 1;
+	cmd_params->cmd_size += (cmd_params->cmd_binary << 2 || func_nbr == 16) ?
+		2 : 1;
 	if ((info->write_pos + cmd_params->cmd_size) > info->to_write_size)
 		malloc_resize_write_size(info);
 	return (1);
 }
 
+static void		check_func_handler(unsigned char func_nbr,
+		t_token token, t_info *info, unsigned int memcmp_siz)
+{
+	t_cmd			cmd_params;
 
-void	parse_functions(t_info *info)
+	if (func_nbr == MAX_FUNC_NBR)
+		unknown_function(info, token.token[0][0], memcmp_siz);
+	else if (check_one_function(func_nbr, token, info, &cmd_params))
+		write_one_function(func_nbr, token, info, cmd_params.cmd_binary);
+	else
+		info->error = 1;
+}
+
+void			parse_functions(t_info *info)
 {
 	unsigned int	i;
 	unsigned char	func_nbr;
 	unsigned int	memcmp_siz;
-	t_cmd			cmd_params;
 
-	i = 0;
-	while (i < info->token_nbr)
+	i = -1;
+	while (++i < info->token_nbr)
 	{
 		func_nbr = 1;
 		memcmp_siz = info->tokens[i].token[0][1] - info->tokens[i].token[0][0];
 		if (info->tokens[i].func_nbr == FUNCTION)
 		{
-			while (func_nbr < MAX_FUNC_NBR && (memcmp_siz != ft_strlen(g_op_tab[func_nbr].name) || ft_memcmp(&info->file[info->tokens[i].token[0][0]], g_op_tab[func_nbr].name, memcmp_siz)))
+			while (func_nbr < MAX_FUNC_NBR
+					&& (memcmp_siz != ft_strlen(g_op_tab[func_nbr].name)
+						|| ft_memcmp(&info->file[info->tokens[i].token[0][0]],
+							g_op_tab[func_nbr].name, memcmp_siz)))
 				func_nbr++;
-			if (func_nbr == MAX_FUNC_NBR)
-			{
-				// error : unknown function
-				// info->error  = 1;
-				// save error
-			}
-			else
-			{
-				if (check_one_function(func_nbr, info->tokens[i], info, &cmd_params))
-				{
-					write_one_function(func_nbr, info->tokens[i], info, cmd_params.cmd_binary); 
-				}
-			}
+			check_func_handler(func_nbr, info->tokens[i], info, memcmp_siz);
 		}
 		else
-			label_list(info, new_label(info->tokens[i].token[0][0], info->tokens[i].token[0][1] - info->tokens[i].token[0][0], info->write_pos, 0, 0));
-		i++;
+			label_list(info, new_label(
+						new_label_first(info->tokens[i].token[0][0],
+					info->tokens[i].token[0][1] - info->tokens[i].token[0][0]),
+						info->write_pos, 0, 0));
 	}
 }

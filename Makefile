@@ -4,6 +4,7 @@ SOURCES =	main.c \
 			read_file.c \
 			input_binary.c \
 			label_management.c \
+			label_management_two.c \
 			store_name_comment.c \
 			lexer.c \
 			parser.c \
@@ -11,6 +12,7 @@ SOURCES =	main.c \
 			check_func_argument.c \
 			malloc.c \
 			write_operations.c \
+			write_errors.c \
 
 LIBDIR = libft
 
@@ -18,7 +20,7 @@ SDIR = srcs
 
 ODIR = bin
 
-CFLAGS = -Werror -Wall -Wextra  -g -Ofast #-fsanitize=address
+CFLAGS = -Werror -Wall -Wextra  -g -Ofast
 
 INCDIR = includes
 

@@ -1,32 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   label_management.c                                 :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/10/11 00:10:48 by lazrossi          #+#    #+#             */
+/*   Updated: 2018/10/11 00:12:24 by lazrossi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
 #include <stdlib.h>
-
-
-t_label new_label(int pos_in_file, int len, int label_pos,
-		int write_pos, int byte_size)
-{
-	t_label new;
-
-	new.pos_in_file = pos_in_file;
-	new.name_len = len;
-	new.byte_size = byte_size;
-	new.label_pos = label_pos;
-	new.write_pos = write_pos;
-	new.next = NULL;
-	return (new);
-}
-
-void	add_new_label_type(t_label_info *info, t_label new, int i)
-{
-	info->n++;
-	if (info->n == info->label_categories)
-	{
-		info->label_categories *= 2;
-		malloc_resize_label_list(info);
-	}
-	(info->label_list)[i] = new;
-}
 
 void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 {
@@ -91,9 +77,9 @@ void	check_label_list(t_label_info *info)
 void	input_labels(t_label_info *label_info, t_info *info)
 {
 	unsigned int		i;
-	t_label	*tmp;
-	int		pos;
-	short	distance;
+	t_label				*tmp;
+	int					pos;
+	short				distance;
 
 	i = -1;
 	while (++i < label_info->n)
