@@ -6,77 +6,12 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/20 10:48:41 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/10 18:58:14 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/10 23:59:56 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../libft/includes/libft.h"
 #include "../includes/asm.h"
-
-static int		g_lexer[21][12][2] = {
-
-
-// 	  0		 .		 n		  a		 m		 e		  c		  o		 t		  \n     "		 AN	
-0  	{{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                 
-1 	 {{0, 0}, {1, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-2 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-3 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-4 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-5 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-6 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-7 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-  	                                                                                                
-8 	 {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-9    {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-10   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-11   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-12   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-13   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-14   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-15   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-16   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-17   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-18   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                  
-19   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-                                                                                                    
-20   {{0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}},
-
-};
-
-static unsigned	int	g_ascii_tab[128] = {
-	0,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 9,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 10, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 1, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 3, 11, 6, 11,
-	5, 11, 11, 11, 11, 11, 11, 11, 4, 2,
-	7, 11, 11, 11, 11, 8, 11, 11, 11, 11,
-	11, 11, 11, 11, 11, 11, 11
-};
 
 static void	input_magic(t_info *info)
 {
@@ -99,7 +34,7 @@ static void	store_name_comment_2(t_info *info, int which, int quotes_end)
 	ft_memcpy(which == (PROG_NAME_LENGTH) ?
 	info->header.prog_name :
 	info->header.comment, &info->file[info->read_pos] + 1, quotes_end);
-	info->read_pos = ft_strchr(&info->file[info->read_pos], '\n') - info->file;
+	info->read_pos += quotes_end + 2;
 	if (which == PROG_NAME_LENGTH)
 	{
 		input_magic(info);
@@ -109,12 +44,27 @@ static void	store_name_comment_2(t_info *info, int which, int quotes_end)
 
 void	store_name_comment(t_info *info, int which)
 {
-	unsigned int begin_state;
-	unsigned int end_state;
+	int		quotes_end;
 
-	end_state = 1;
-	while (begin_state)
-	{
-		begin_state = end_state;
-	}
+	if (!(ft_strchr(&info->file[(int)info->read_pos], '.')))
+		ft_myexit("File must begin by a . for name and comment lines");
+	info->read_pos = (unsigned int)
+				(ft_strchr(&info->file[(int)info->read_pos], '.') - info->file);
+	if (ft_memcmp(&info->file[info->read_pos], which == PROG_NAME_LENGTH ?
+		".name" : ".comment",
+		ft_strlen(which == PROG_NAME_LENGTH ? ".name" : ".comment")))
+		ft_myexit("Your name or comment line must start by .name or .comment");
+	if (NULL == ft_strnchr(&info->file[info->read_pos], '"',
+	ft_strchr(&info->file[info->read_pos], '\n') - &info->file[info->read_pos]))
+		ft_myexit("No quotes after .name or .comment");
+	info->read_pos = ft_strnchr(&info->file[info->read_pos], '"',
+	ft_strchr(&info->file[info->read_pos], '\n') - &info->file[info->read_pos])
+		- info->file;
+
+	quotes_end = 0;
+	while (info->file[info->read_pos + quotes_end] && info->file[info->read_pos + quotes_end + 1] != '"')
+		quotes_end++;
+	if (!(info->file[info->read_pos + quotes_end]))
+		ft_myexit("Dangling quotes after .name or .comment");
+	store_name_comment_2(info, which, quotes_end);
 }
