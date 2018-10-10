@@ -48,7 +48,7 @@ static void	save_tokens(t_info *info, int *command_start, int begin_state, int e
 	tmp = *command_start;
 	if (begin_state == ERROR || end_state == ERROR)
 	{
-		// info->error  = 1;
+		info->error  = 1;
 		// save error
 	}
 	if (begin_state == FUNCTION && end_state == ARG_INPUT_WAIT)

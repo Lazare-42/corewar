@@ -2,7 +2,7 @@ NAME = asm
 
 SOURCES =	main.c \
 			read_file.c \
-			write_binary.c \
+			input_binary.c \
 			label_management.c \
 			store_name_comment.c \
 			lexer.c \

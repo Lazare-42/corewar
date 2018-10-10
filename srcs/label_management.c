@@ -3,7 +3,8 @@
 #include <stdlib.h>
 
 
-t_label new_label(int pos_in_file, int len, int label_pos, int write_pos, int byte_size)
+t_label new_label(int pos_in_file, int len, int label_pos,
+		int write_pos, int byte_size)
 {
 	t_label new;
 
@@ -40,6 +41,7 @@ void	put_anchor_first(t_label_info *info, int i, t_label *to_swap)
 	(info->label_list)[i].write_pos = write_pos;
 	(info->label_list)[i].label_pos = label_pos;
 }
+
 void	add_label_to_list(t_info *info, t_label new)
 {
 	unsigned int			i;
@@ -50,7 +52,9 @@ void	add_label_to_list(t_info *info, t_label new)
 	while (++i < info->label_info.n)
 	{
 		strlen_cmp = info->label_info.label_list[i].name_len;
-		if (strlen_cmp == new.name_len && !ft_memcmp(&info->file[info->label_info.label_list[i].pos_in_file], &info->file[new.pos_in_file], new.name_len))
+		if (strlen_cmp == new.name_len &&
+			!ft_memcmp(&info->file[info->label_info.label_list[i].pos_in_file],
+				&info->file[new.pos_in_file], new.name_len))
 		{
 			tmp = &(info->label_info.label_list)[i];
 			while (tmp->next)
