@@ -95,7 +95,7 @@ void	read_file(t_info *info, t_fd fd)
 	{
 		if (read_size == malloc_size || !(info->file))
 			malloc_file_line(&(info->file), &malloc_size);
-		if (buf == '#')
+		if (buf == '#' || buf == ';')
 			comment_mode = 1;
 		if (comment_mode && buf == '\n')
 			comment_mode = 0;

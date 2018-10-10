@@ -6,82 +6,100 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/28 16:16:15 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/09 23:44:08 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/10 12:50:10 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/asm.h"
 #include "../libft/includes/libft.h"
 
-void	write_one_reg(t_info *info, int instruction_pos)
+static void	write_one_reg(t_info *info, int instruct_pos)
 {
 	char	reg;
 
-	reg = ft_atoi(&info->file[instruction_pos + 1]);
+	reg = 0;
+	reg = ft_atoi(&info->file[instruct_pos + 1]);
 	ft_memcpy((void*)&info->to_write[info->write_pos], &reg, sizeof(char));
 	info->write_pos += T_REG;
 }
 
-void	write_one_indirect(t_info *info, int instruction_pos, int instruction_len)
+static void	write_one_indirect(t_info *info, int instruct_pos, int instruct_len)
 {
 	short	indirection;
 
-	if (info->file[instruction_pos] != LABEL_CHAR)
+	if (info->file[instruct_pos] != LABEL_CHAR)
 	{
-		indirection = ft_atoi(&info->file[instruction_pos]);
+		indirection = ft_atoi(&info->file[instruct_pos]);
 		if (ft_check_little_endianness())
 			indirection = little_endian_to_big(indirection, sizeof(short));
-		ft_memcpy((void*)&info->to_write[info->write_pos], &indirection, (T_IND / 2));
+		ft_memcpy((void*)&info->to_write[info->write_pos],
+				&indirection,
+				T_IND / 2);
 	}
 	else
 	{
-		label_list(info, new_label(instruction_pos + 1, instruction_len - 1, info->cmd_begin_pos, info->write_pos,  T_IND / 2));
+		label_list(info, new_label(instruct_pos + 1,
+					instruct_len - 1, info->cmd_begin_pos,
+					info->write_pos,
+					T_IND / 2));
 	}
 	info->write_pos += T_IND / 2;
 }
 
-void	write_one_direct(t_info *info, unsigned int instruction_pos, unsigned int instruction_len, unsigned char func_nbr)
+static void	write_one_direct(t_info *info, unsigned int instruct_pos,
+		unsigned int instruct_len, unsigned char func_nbr)
 {
 	int		reg_ind;
 
-	if (info->file[instruction_pos + 1] == LABEL_CHAR)
-	{
-		label_list(info, new_label(instruction_pos + 2, instruction_len - 2, info->cmd_begin_pos, info->write_pos, (func_nbr < XOR_FUNC_NBR || func_nbr == 13) ? T_DIR * 2 : T_DIR));
-	}
+	if (LABEL_CHAR == info->file[instruct_pos + 1])
+		label_list(info,
+				new_label(instruct_pos + 2, instruct_len - 2,
+					info->cmd_begin_pos, info->write_pos,
+					(func_nbr < XOR_FUNC_NBR || func_nbr == 13) ?
+					T_DIR * 2 : T_DIR));
 	else
 	{
-		reg_ind = ft_atoi(&info->file[instruction_pos + 1]);
+		reg_ind = ft_atoi(&info->file[instruct_pos + 1]);
 		if (ft_check_little_endianness())
-			reg_ind = little_endian_to_big(reg_ind, (func_nbr < XOR_FUNC_NBR || func_nbr == 13) ? T_DIR * 2 : T_DIR);
-		ft_memcpy((void*)&info->to_write[info->write_pos], &reg_ind, (func_nbr < XOR_FUNC_NBR || func_nbr == 13) ? T_DIR * 2 : T_DIR);
+			reg_ind = little_endian_to_big(reg_ind,
+					func_nbr < XOR_FUNC_NBR || func_nbr == 13 ?
+					T_DIR * 2 : T_DIR);
+		ft_memcpy((void*)&info->to_write[info->write_pos],
+				&reg_ind,
+				(func_nbr < XOR_FUNC_NBR || func_nbr == 13) ?
+				T_DIR * 2 : T_DIR);
 	}
-	info->write_pos += (func_nbr < XOR_FUNC_NBR || func_nbr == 13) ? T_DIR * 2 : T_DIR;
+	if (func_nbr < XOR_FUNC_NBR || 13 == func_nbr)
+		info->write_pos += T_DIR * 2;
+	else
+		info->write_pos += T_DIR;
 }
 
-void	write_function_arguments(t_info *info, t_token function_token, unsigned char func_nbr, unsigned char cmd_binary)
+static void	write_function_arguments(t_info *info, t_token function_token,
+		unsigned char func_nbr, unsigned char cmd_binary)
 {
-	int read_command_binary;
+	unsigned int	read_command_binary;
+	unsigned int	instruct_pos;
+	unsigned int	instruct_len;
 
 	read_command_binary = 6;
-	while ((cmd_binary>> read_command_binary) & 3 && read_command_binary >= 2)
+	while ((cmd_binary >> read_command_binary) & 3 && read_command_binary >= 2)
 	{
+		instruct_pos = function_token.token[1 + 3 - read_command_binary / 2][0];
+		instruct_len = function_token.token[1 + 3 - read_command_binary / 2][1]
+			- instruct_pos;
 		if (((cmd_binary >> read_command_binary) & 3) == REG_CODE)
-		{
-			write_one_reg(info, function_token.token[1 + 3 - read_command_binary / 2][0]);
-		}
+			write_one_reg(info, instruct_pos);
 		if (((cmd_binary >> read_command_binary) & 3) == IND_CODE)
-		{
-			write_one_indirect(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0]);
-		}
+			write_one_indirect(info, instruct_pos, instruct_len);
 		if (((cmd_binary >> read_command_binary) & 3) == DIR_CODE)
-		{
-			write_one_direct(info, function_token.token[1 + 3 - read_command_binary / 2][0], function_token.token[1 + 3 - read_command_binary / 2][1] - function_token.token[1 + 3 - read_command_binary / 2][0], func_nbr);
-		}
+			write_one_direct(info, instruct_pos, instruct_len, func_nbr);
 		read_command_binary -= 2;
 	}
 }
 
-void	write_one_function(unsigned char func_nbr, t_token function_token, t_info *info, unsigned char cmd_binary)
+void		write_one_function(unsigned char func_nbr,
+		t_token function_token, t_info *info, unsigned char cmd_binary)
 {
 	(info->to_write)[info->write_pos] = func_nbr;
 	info->cmd_begin_pos = info->write_pos;

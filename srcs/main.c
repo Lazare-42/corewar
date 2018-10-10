@@ -6,7 +6,7 @@
 /*   By: lazrossi <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/09/16 17:37:23 by lazrossi          #+#    #+#             */
-/*   Updated: 2018/10/09 23:46:36 by lazrossi         ###   ########.fr       */
+/*   Updated: 2018/10/10 12:36:15 by lazrossi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,7 @@ static void	struct_init(t_fd *fd, t_info *info)
 	info->write_pos = sizeof(info->header);
 }
 
-// check at the beginning if integers are of size 4 (always the case)
-int		main(int ac, char **av)
+int			main(int ac, char **av)
 {
 	t_fd			fd;
 	t_info			info;
@@ -37,7 +36,7 @@ int		main(int ac, char **av)
 	struct_init(&fd, &info);
 	malloc_resize_write_size(&info);
 	if (ac != 2)
-		ft_myexit("You need to pass not more or less than one file to assemble");
+		ft_myexit("You need to pass exactly one file to assemble");
 	set_name_open_fd(&info, &fd, av[1]);
 	read_file(&info, fd);
 	store_name_comment(&info, PROG_NAME_LENGTH);
